@@ -30,3 +30,7 @@
 - Nouvel onglet « Monde » : la Terre du Feu, 7200 × 4500, six zones (Village caché de la Feuille, forêts, désert, mer, montagnes…), minicarte, cycle jour/nuit.
 - Maîtres canon (Kakashi, Tsunade, Jiraiya…) et 32 maîtres itinérants qui enseignent par des épreuves QTE : 17 modes appris (Mode Ermite Crapaud/Serpent/Bois, Byakugō, Huit Portes, Ōtsutsuki, Chakra de Bijū, Contrôle V2, Cinq Cœurs, Izanagi, Kaguya, Hiraishin, Ange de Papier, Samehada, Armure de Foudre, Armure de Sable, Iaidō). Ils s’intègrent au système de stades de Shinobi 2 comme une pupille équipable.
 - 30 événements du monde, PNJ amicaux ou hostiles avec routes et maisons, apprivoisement (G) et invocation (V) de créatures, contrats d’invocation, accessoires, boutiques.
+
+# Shinobi 2 — Mise à jour 12 : Créatif+ & confort
+- Panneau Créatif : choc de Bijūdama (ton bijū contre un autre), Mode Jinchūriki par bijū, toutes les pupilles et modes appris à n’importe quel stade, simulateur de boss (rangs 1/3/5), labo des réactions (triples, quadruples, quintuple, dōjutsu), labo des ultimes/secrètes/spéciales, créateur de moveset (4 techniques + ultime, sauvegarde, simulation contre l’IA), maîtrise maximale + tout débloquer.
+- Confort : C maintenu + E (pupille) ou F (bijū) monte directement au stade maximal accessible ; transitions à l’encre entre écrans, animation des onglets (réduite si « réduire les animations » est actif dans le système).

@@ -20,11 +20,16 @@ Modes à stades (Bête + manteaux, pupilles solaire/lunaire/céleste/miroir/néa
 | Ultimes en duo | porté v9 (sans QTE : déclenchement automatique près d’un allié) | src/52_susanoo.js |
 | Spéciales Hiruzen/Asuma/Naruto/Sasuke/Itachi/Madara/Kakashi (28) | porté v10 | src/53_specials.js |
 | Monde ouvert, maîtres, 17 modes appris, 30 événements, PNJ/routes, apprivoisement | porté v11 (carte propre au mode « monde », modes convertis au format de stades de la base) | src/54_world.js |
+| Modes Créatif d’Éternel (choc de Bijūdama, simulateur de boss, labos réactions/ultimes, créateur de moveset + simulation, maîtrise max) | porté v12 dans le panneau Créatif existant | src/55_crea_qol.js |
+| QoL : C + E/F stade max, transitions à l’encre | porté v12 | src/55_crea_qol.js |
 
-## Manquant → NON porté (prévu : l’utilisateur a validé les noms canon) (pour l’instant)
-| Système | Raison |
+## Volontairement non repris (Shinobi 2 a déjà l’équivalent — pas de doublon)
+| Système Éternel | Équivalent conservé dans Shinobi 2 |
 |---|---|
-| Monde ouvert, maîtres, événements, routes PNJ (ext35/38/40) | architecture de carte différente (histoire/raid/tour de la base) |
-| 9 bijū canon (ext32), 50 techniques secrètes (ext33), Susanoo/duo (ext36) | doublonneraient les systèmes de la base, noms canon contraires à sa politique de noms originaux |
-| Spéciaux Hiruzen/Asuma/Naruto/Sasuke (ext42) | noms canon + dépendance aux modes d’Éternel |
-| QoL d’Éternel (ext39), modes Créatif d’Éternel (ext44) | la base a déjà son panneau Créatif ; QoL lié aux modes d’Éternel |
+| Système de modes ext3a–3d (u.md) | MODES à stades de la base (les modes d’Éternel sont convertis dedans) |
+| Sceaux + fusions ext42, chocs QTE | SEAL_HANDS / FUSE_PAIR / FUSE_TRIPLE, clashs et ruées de la base |
+| Katana dorsal ext42 | kenjutsu et lames de la base |
+| Filtres par tags ext33b | sous-catégories techSub de la base |
+| Arène de personnages ext33c (duels Naruto/Sasuke…) | défis convertis en éliminations/réactions ; PvP de la base |
+| QTE de synchronisation des duos | duo déclenché automatiquement (pas de QTE) |
+| Progression accélérée ext39 | équilibrage de la base conservé |
