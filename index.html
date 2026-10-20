@@ -11616,6 +11616,75 @@ function techCard2(id, p, opts = {}) {
     d.innerHTML = '<h3>Techniques secrètes (' + SE33.LIST.length + ')</h3>' + SE33.LIST.map((e) => { const T = TECH[e.id]; if (!T) return ''; const [tx] = chText(e.ch); return `<p><b>${s && s.un[e.id] ? '★' : '☆'} ${esc(T.n)}</b> <span class="muted">(${esc(e.who)})</span> — ${esc(T.desc)} <i class="muted">${tx}</i></p>`; }).join(''); g.appendChild(d); };
   S2.note('s33', '#ffd27a', SE33.LIST.length + ' techniques secrètes canon', 'Deidara, Itachi, Gaara, Kakashi, Shikamaru, Hinata, Haku, Zabuza… chacune avec son effet propre et 3 niveaux de maîtrise. Débloquées en éliminant des ennemis ou en déclenchant des réactions ; toutes disponibles en Créatif.');
 })();
+/* Shinobi 2 v9 — Susanoo (fusion avec l’« armure spectrale » des pupilles à 8 stades) + ultimes en duo (port Éternel II ext36) */
+(function(){
+  const SE36 = (window.SE36 = { ev: {}, duo: null });
+  // Noms canon des pupilles et des stades
+  const EN = { solaire: 'Sharingan · Amaterasu', lunaire: 'Sharingan · Tsukuyomi', miroir: 'Sharingan · Kamui', celeste: 'Byakugan', neant: 'Rinnegan', anneaux: 'Rinne-Sharingan' };
+  for (const k in EN) { if (EYES[k]) EYES[k].n = EN[k]; if (MODES[k]) MODES[k].n = EN[k]; }
+  const ST8 = ['Sharingan · 1 tomoe', 'Sharingan · 2 tomoe', 'Sharingan · 3 tomoe', 'Mangekyō Sharingan', 'Susanoo · cage thoracique', 'Susanoo · squelette', 'Mangekyō Sharingan Éternel', 'Susanoo parfait'];
+  for (const k of ['solaire', 'lunaire', 'miroir']) (MODES[k].stages || []).forEach((s, i) => { if (ST8[i]) s.n = ST8[i]; });
+  const ren = { so_gardien: 'Susanoo', so_lame: 'Lame de Totsuka', so_avatar: 'Susanoo parfait : Lame de Totsuka', so_dragonnoir: 'Enton : Kagutsuchi', eye_flamme: 'Amaterasu', lu_prison: 'Tsukuyomi', lu_eternelle: 'Tsukuyomi Éternel', mi_dimension: 'Kamui', mi_distorsion: 'Kamui : Distorsion', eye_copie: 'Copie du Sharingan', ce_paume: 'Hakke Kūshō', ce_rotation: 'Hakkeshō Kaiten', ce_128: 'Hakke Hyakunijūhachi Shō', ce_lions: 'Poings des Lions Jumeaux', grav_repousse: 'Shinra Tensei', ne_attire: 'Bansho Ten’in', ne_trounoir: 'Chibaku Tensei', ne_absorb: 'Gakidō : Absorption', an_meteores: 'Tengai Shinsei' };
+  for (const k in ren) if (TECH[k]) TECH[k].n = ren[k];
+  // Techniques du Susanoo (kinds natifs)
+  for (const e of ['solaire', 'lunaire', 'miroir']) {
+    M('sus_poing_' + e, 'Poing du Susanoo', e, 'neutre', 'nova', 20, 6, 120, { r: 170, kb: 600, spectral: 1 }, 'Le bras squelettique du Susanoo écrase le sol devant toi.');
+    M('sus_magatama_' + e, 'Yasaka no Magatama', e, 'neutre', 'proj', 22, 5, 46, { cnt: 3, spr: 0.35, spd: 560, r: 13, life: 1.6, hom: 4, ex: 70, look: 'bijuorb' }, 'Trois magatama de chakra qui poursuivent les ennemis.');
+    M('sus_fleche_' + e, 'Flèche du Susanoo', e, 'neutre', 'beam', 30, 9, 180, { rng: 900, w: 46, delay: 0.3, spectral: 1 }, 'Le Susanoo bande son arc : une flèche de chakra traverse tout.');
+    const st = MODES[e].stages; const add = (i, id) => { if (st[i] && !st[i].skills.includes(id)) st[i].skills.splice(1, 0, id); };
+    add(5, 'sus_poing_' + e); add(6, 'sus_magatama_' + e); add(6, 'sus_fleche_' + e); add(7, 'sus_fleche_' + e); add(7, 'sus_magatama_' + e);
+  }
+  const susLv = (u) => { const m = u && u.mode; if (!m || !['solaire', 'lunaire', 'miroir'].includes(m.id)) return 0; return m.stage >= 8 ? 4 : m.stage >= 6 ? m.stage - 4 : m.stage === 5 ? 1 : 0; };
+  const susC = (u) => ({ solaire: '#ff5a3a', lunaire: '#9a5aff', miroir: '#5ad8ff' }[u.mode && u.mode.id] || '#b06aff');
+  SE36.susLv = susLv;
+  const bd = dealDamage; dealDamage = function (src, tgt, b, o = {}) { const sl = susLv(tgt); if (sl) { arguments[2] = b * (1 - [0, 0.25, 0.35, 0.45, 0.55][sl]); } return bd.apply(this, arguments); };
+  function drawSus(ctx, u, lv) {
+    const c = susC(u); const x = u.x, y = u.y - (u.z || 0); const sc = [0, 1, 1.15, 1.45, 1.9][lv] * (u.size || 1); const t = G.t; const fl = 0.85 + Math.sin(t * 8) * 0.08;
+    ctx.save(); ctx.globalAlpha = 0.5 * fl; ctx.strokeStyle = c; ctx.fillStyle = rgba(c, 0.18); ctx.lineCap = 'round';
+    if (lv === 1 || lv === 2) {
+      ctx.lineWidth = 5; for (let i = 0; i < 5; i++) { const yy = y - 30 * sc - i * 9 * sc; ctx.beginPath(); ctx.ellipse(x, yy, (30 - i * 2) * sc, 12 * sc, 0, Math.PI * 1.05, Math.PI * 1.95, true); ctx.stroke(); }
+      ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(x, y - 22 * sc); ctx.lineTo(x, y - 76 * sc); ctx.stroke();
+      if (lv === 2) { ctx.lineWidth = 7; ctx.beginPath(); ctx.arc(x, y - 92 * sc, 15 * sc, 0, TAU); ctx.stroke(); ctx.fillStyle = rgba(c, 0.6); ctx.fillRect(x - 8 * sc, y - 96 * sc, 5 * sc, 4 * sc); ctx.fillRect(x + 3 * sc, y - 96 * sc, 5 * sc, 4 * sc);
+        for (const s of [-1, 1]) { ctx.beginPath(); ctx.moveTo(x + s * 28 * sc, y - 70 * sc); ctx.lineTo(x + s * 52 * sc, y - 40 * sc + Math.sin(t * 3 + s) * 4); ctx.lineTo(x + s * 60 * sc, y - 10 * sc); ctx.stroke(); } }
+    } else {
+      // humanoïde / parfait : silhouette pleine
+      const H = lv === 4 ? 150 : 115; ctx.lineWidth = 3; ctx.fillStyle = rgba(c, lv === 4 ? 0.32 : 0.24);
+      ctx.beginPath(); ctx.moveTo(x - 36 * sc, y - 10 * sc); ctx.quadraticCurveTo(x - 48 * sc, y - H * 0.6 * sc, x - 26 * sc, y - H * 0.8 * sc); ctx.lineTo(x + 26 * sc, y - H * 0.8 * sc); ctx.quadraticCurveTo(x + 48 * sc, y - H * 0.6 * sc, x + 36 * sc, y - 10 * sc); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(x, y - H * 0.9 * sc, 18 * sc, 20 * sc, 0, 0, TAU); ctx.fill(); ctx.stroke();
+      if (lv === 4) { ctx.beginPath(); ctx.moveTo(x - 4 * sc, y - H * 0.9 * sc); ctx.lineTo(x + (u.face || 1) * 30 * sc, y - H * 0.88 * sc); ctx.lineTo(x + 4 * sc, y - H * 0.84 * sc); ctx.fill(); ctx.stroke();
+        for (const s of [-1, 1]) { ctx.beginPath(); ctx.moveTo(x + s * 30 * sc, y - H * 0.7 * sc); ctx.quadraticCurveTo(x + s * 120 * sc, y - H * 1.05 * sc + Math.sin(t * 2) * 6, x + s * 110 * sc, y - H * 0.3 * sc); ctx.quadraticCurveTo(x + s * 70 * sc, y - H * 0.5 * sc, x + s * 30 * sc, y - H * 0.45 * sc); ctx.fill(); ctx.stroke(); }
+        ctx.lineWidth = 2; for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.moveTo(x - 30 * sc, y - (30 + i * 16) * sc); ctx.lineTo(x + 30 * sc, y - (30 + i * 16) * sc); ctx.stroke(); } }
+      else { ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(x - 50 * sc, y - H * 0.55 * sc, 34 * sc, -1.2, 1.2); ctx.stroke(); }
+      ctx.fillStyle = rgba('#ffffff', 0.7); ctx.fillRect(x - 9 * sc, y - H * 0.93 * sc, 6 * sc, 3 * sc); ctx.fillRect(x + 3 * sc, y - H * 0.93 * sc, 6 * sc, 3 * sc);
+    }
+    ctx.restore();
+  }
+  SE36.drawSus = drawSus;
+  const bdn = drawNinja; drawNinja = function (ctx, gl, u) { const sl = susLv(u); if (sl && !u._tint) { try { drawSus(ctx, u, sl); } catch (e) {} } return bdn.apply(this, arguments); };
+  // Ultimes en duo
+  const DUO_EL = { 'feu+vent': ['Tempête de Flammes', 'feu'], 'eau+foudre': ['Prison Électrique', 'foudre'], 'eau+terre': ['Torrent de Boue', 'terre'], 'foudre+vent': ['Tempête Tranchante', 'foudre'], 'feu+terre': ['Éruption Combinée', 'lave'], 'eau+feu': ['Brouillard Bouillant', 'vapeur'], 'eau+vent': ['Typhon', 'vent'], 'feu+foudre': ['Météore Embrasé', 'feu'], 'terre+vent': ['Tempête de Sable', 'terre'], 'foudre+terre': ['Séisme Foudroyant', 'foudre'] };
+  const TOM = ['solaire', 'lunaire', 'miroir'];
+  function duoOf(a, b) {
+    const ja = a.beast === 'hoo' || (a.mode && a.mode.id === 'bete'), jb = b.beast === 'hoo' || (b.mode && b.mode.id === 'bete'); const sa = TOM.includes(a.eye), sb = TOM.includes(b.eye);
+    if ((ja && sb) || (jb && sa)) return { n: 'Rasengan × Chidori', d: 'Les deux rivaux unissent Rasengan et Chidori.', el: 'foudre' };
+    if (sa && sb) return { n: 'Susanoo des Frères', d: 'Deux Susanoo frappent ensemble.', el: 'feu' };
+    if (ja && jb) return { n: 'Bijūdama Jumelle', d: 'Deux jinchūriki tirent une Bijūdama commune.', el: 'neutre' };
+    if ((a.eye === 'celeste') !== (b.eye === 'celeste') && (a.eye === 'celeste' || b.eye === 'celeste')) return { n: 'Lions Jumeaux × Rasengan', d: 'Les poings des lions guident un Rasengan.', el: 'vent' };
+    const ea = (a.elements && a.elements[0]) || 'feu', eb = (b.elements && b.elements[0]) || 'vent'; if (ea === eb) return { n: 'Double ' + (EL[ea] || EL.neutre).n, d: 'Deux techniques identiques fusionnent.', el: ea };
+    const E = DUO_EL[[ea, eb].sort().join('+')]; return E ? { n: E[0], d: 'Fusion ' + (EL[ea] || EL.neutre).n + ' + ' + (EL[eb] || EL.neutre).n, el: E[1] } : { n: 'Assaut Combiné', d: 'Une attaque coordonnée.', el: ea };
+  }
+  const allyFor = (u) => G.units.find((v) => alive(v) && v !== u && v.team === u.team && !v.decoy && !v.summon && (v.isPlayer || v.ally || v.ai) && v.kind !== 'dummy' && dist(u.x, u.y, v.x, v.y) < 320);
+  SE36.duoOf = duoOf; SE36.allyFor = allyFor;
+  function duo(u, al, fo, D) { const E = EL[D.el] || EL.neutre; const x = fo.x, y = fo.y; SE36.duo = { t: 0, n: D.n, c: E.c }; banner(D.n, 'ULTIME EN DUO', E.c, (u.name || 'Toi') + ' & ' + (al.name || 'allié')); G.slowT = 0.8; G.slowS = 0.3;
+    G.delayed.push({ t: 0.6, f: () => { for (const v of enemiesOf(u)) if (dist(v.x, v.y, x, y) < 320) dealDamage(u, v, 320 * (u.atk || 1), { el: D.el, kb: 900, kbA: Math.atan2(v.y - y, v.x - x), tech: 'duo' });
+      FX.ring(x, y, E.c, 20, 320, 0.6, 14); FX.kanji(x, y, 160, '双', E.c, 70, 1.2); G.hitStop = Math.max(G.hitStop, 0.12); Cam.add(1.2); Post.shock(x, y, 2, 600); Audio.play('boom', 1.5); SE36.ev.duo = D.n; } }); }
+  SE36.duoFx = duo;
+  const btc = tryCast; tryCast = function (u, id, a, tgt) { const r = btc.apply(this, arguments);
+    try { if (r !== false && u && u.isPlayer && !(u.denyFx && u.denyFx.t === G.t) && id && id === ultOf(u) && G.mode !== 'pvp' && !(u._duoCd > G.t)) { const al = allyFor(u); const fo = tgt && alive(tgt) ? tgt : enemiesOf(u).sort((p, q) => dist(u.x, u.y, p.x, p.y) - dist(u.x, u.y, q.x, q.y))[0]; if (al && fo) { u._duoCd = G.t + 25; duo(u, al, fo, duoOf(u, al)); } } } catch (e) { console.warn('duo', e.message); }
+    return r; };
+  S2.note('sus', '#9a5aff', 'Susanoo et noms canon des pupilles', 'Les pupilles à tomoe deviennent Sharingan (Amaterasu, Tsukuyomi, Kamui), Mangekyō, Mangekyō Éternel. L’armure spectrale devient le Susanoo en 4 stades (cage, squelette, humanoïde, parfait) : −25 à −55 % de dégâts, Poing, Magatama, Flèche, Lame de Totsuka. Byakugan, Rinnegan et Rinne-Sharingan prennent leur nom.');
+  S2.note('duo', '#ffd27a', 'Ultimes en duo', 'Lance ton ultime près d’un allié : attaque combinée cinématique (Rasengan × Chidori, Susanoo des Frères, Bijūdama Jumelle, Lions Jumeaux × Rasengan, et 10 fusions élémentaires). Recharge 25 s.');
+})();
 /* Shinobi 2 — Constellations uniques par technique (port Éternel II v4.5, formes thématiques) */
 (function(){
   const hash = (s) => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };

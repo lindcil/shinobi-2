@@ -14,3 +14,8 @@
 - Les 9 bijū canon (Shukaku → Kurama) remplacent les bêtes, sauvegardes conservées. Le mode s’appelle désormais Mode Jinchūriki ; stades V1, V2, Transformation complète, Mode Chakra du Bijū.
 - Chaque bijū a 3 techniques canon (Cercueil de Sable, Mer de Flammes Bleues, Récif de Corail, Éruption, Geysers, Brume Corrosive, Essaim Lumineux, Tentacules, Rugissement Kyūbi…). Les orbes deviennent des Bijūdama.
 - 63 techniques secrètes canon (Deidara, Itachi, Gaara, Kakashi, Shikamaru, Hinata, Haku, Zabuza, Chōji, Ino, Tenten, Kiba…) : moteur d’effets propres, 3 niveaux de maîtrise, utilisées par l’IA. Déblocage par éliminations ou réactions ; toutes disponibles en Créatif ; liste complète dans le Guide.
+
+# Shinobi 2 — Mise à jour 9 : Susanoo & Ultimes en duo
+- Pupilles renommées : Sharingan (Amaterasu, Tsukuyomi, Kamui), Byakugan, Rinnegan, Rinne-Sharingan. Stades : 1 à 3 tomoe, Mangekyō, Susanoo (cage thoracique, squelette), Mangekyō Éternel, Susanoo parfait. Techniques canon renommées (Amaterasu, Kagutsuchi, Kamui, Shinra Tensei, Chibaku Tensei, Kaiten, 64/128 Points…).
+- Susanoo dessiné autour du personnage aux stades 5 à 8, avec −25/−35/−45/−55 % de dégâts reçus. Nouvelles techniques : Poing du Susanoo, Yasaka no Magatama, Flèche du Susanoo.
+- Ultimes en duo : ton ultime lancé près d’un allié déclenche une attaque combinée (Rasengan × Chidori, Susanoo des Frères, Bijūdama Jumelle, Lions Jumeaux × Rasengan, 10 fusions élémentaires). Recharge 25 s.
