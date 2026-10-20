@@ -4762,7 +4762,7 @@ function enterMode(u, id, stage = 1, quiet) {
   Post.shock(u.x, u.y, 1.1, 320 + stage * 80); Cam.add(0.5 + stage * 0.15); Cam.punch = 0.08; G.slowT = 0.45; G.slowS = 0.3; G.flashA = 0.35; G.flashC = c;
   for (const v of enemiesOf(u)) if (dist(u.x, u.y, v.x, v.y) < 200 + stage * 30) { const a = angTo(u, v); v.vx += Math.cos(a) * 520; v.vy += Math.sin(a) * 520; v.kbT = 0.3; }
   Audio.play(prev ? 'modeup' : Md.kind === 'beast' ? 'roar' : 'eyeon', 1, u.x); if (Md.kind === 'beast') Audio.play('roar', 1, u.x);
-  if (!quiet) { if (u.isPlayer) banner(modeName(u), prev ? `STADE ${stage}` : Md.kind === 'beast' ? 'MODE BÊTE' : Md.kind === 'sage' ? 'MODE ERMITE' : 'PUPILLE ÉVEILLÉE', c, kitHint(u)); else FX.text(u.x, u.y - 110 * u.size, modeName(u), c, 18, true, 1.3); }
+  if (!quiet) { if (u.isPlayer) banner(modeName(u), prev ? `STADE ${stage}` : Md.kind === 'beast' ? 'MODE JINCHŪRIKI' : Md.kind === 'sage' ? 'MODE ERMITE' : 'PUPILLE ÉVEILLÉE', c, kitHint(u)); else FX.text(u.x, u.y - 110 * u.size, modeName(u), c, 18, true, 1.3); }
   if (u.isPlayer && G.run) { G.run.modes = G.run.modes || {}; G.run.modes[id] = Math.max(G.run.modes[id] || 0, stage); }
   if (u.isPlayer && P() && progMode()) { const p = P(); p.stats.maxStage = Math.max(p.stats.maxStage || 0, stage); if (id === 'bete' && stage >= 3) p.stats.fullBeast = (p.stats.fullBeast || 0) + 1; }
   return true;
@@ -7234,7 +7234,7 @@ const Cine = {
     banner = function (...a) { args = a; };
     let r; try { r = baseMode(u, id, stage, quiet); } finally { banner = b0; }
     if (!r && r !== undefined) { if (args) banner(...args); return r; }
-    const Md = MODES[id]; const played = u.mode && Cine.play(u, { title: u.mode.def.n, sub: prev ? `${Md.n.toUpperCase()} · STADE ${stage}` : Md.kind === 'beast' ? `MODE BÊTE · ${modeName(u).split(' — ')[0].toUpperCase()}` : Md.kind === 'sage' ? 'MODE ERMITE' : 'PUPILLE ÉVEILLÉE', k: Md.k, c: modeColor(u) });
+    const Md = MODES[id]; const played = u.mode && Cine.play(u, { title: u.mode.def.n, sub: prev ? `${Md.n.toUpperCase()} · STADE ${stage}` : Md.kind === 'beast' ? `MODE JINCHŪRIKI · ${modeName(u).split(' — ')[0].toUpperCase()}` : Md.kind === 'sage' ? 'MODE ERMITE' : 'PUPILLE ÉVEILLÉE', k: Md.k, c: modeColor(u) });
     if (args) { if (played) setTimeout(() => { if (u.mode) banner(...args); }, Cine.on ? Cine.on.dur * 1000 - 150 : 0); else banner(...args); }
     return r;
   };
@@ -10065,7 +10065,7 @@ function guideHTML() {
 function modesCodexHTML(p) {
   const card = (k, c, name, stages, own) => `<div class="modecard${own ? '' : ' locked'}" style="--mc:${c}"><b>${seal(k, own ? c : '#3a3044')} ${esc(name)}</b>${stages.map((s, i) => `<p class="small"><b>Stade ${i + 1} · ${esc(s.n)}</b> <span class="muted">(niv. ${s.req})</span></p><ol>${s.skills.map((id) => { const T = TECH[resolveSkill({ mode: { id: 'bete' }, beast: p.beastEq || 'kazegarasu' }, id)] || TECH[id]; return T ? `<li>${esc(T.n)}</li>` : ''; }).join('')}<li><b>${esc((TECH[resolveSkill({ mode: { id: 'bete' }, beast: p.beastEq || 'kazegarasu' }, s.ult)] || TECH[s.ult] || {}).n || '')}</b> (secrète)</li></ol>`).join('')}</div>`;
   const out = [];
-  out.push(card('獣', '#ff6a2b', 'Mode Bête' + (p.beastEq ? ' : ' + BEASTS.find((b) => b.id === p.beastEq).n : ''), [MODES.bete.stages[0], MODES.bete.stages[1], MODES.bete.stages[2], MODES.bete.stages[3]].map((s, i) => Object.assign({}, s, { n: i >= 2 ? s.n + ' (stade 3)' : s.n })), p.beasts.length > 0));
+  out.push(card('獣', '#ff6a2b', 'Mode Jinchūriki' + (p.beastEq ? ' : ' + BEASTS.find((b) => b.id === p.beastEq).n : ''), [MODES.bete.stages[0], MODES.bete.stages[1], MODES.bete.stages[2], MODES.bete.stages[3]].map((s, i) => Object.assign({}, s, { n: i >= 2 ? s.n + ' (stade 3)' : s.n })), p.beasts.length > 0));
   for (const id of ['solaire', 'lunaire', 'celeste', 'miroir', 'neant', 'anneaux']) out.push(card(EYES[id].k, EYES[id].c, EYES[id].n, MODES[id].stages, p.eyes.includes(id)));
   out.push(card('仙', '#ffb13d', 'Mode Ermite', MODES.ermite.stages, p.lv >= SYS_UNLOCK.ermite.lv));
   return `<p class="muted small">Chaque mode remplace tes techniques. Les stades se débloquent avec ton niveau ; en combat, maintiens le chakra plein pour monter de stade.</p><div class="modecards">${out.join('')}</div>`;
@@ -11014,7 +11014,7 @@ function techCard2(id, p, opts = {}) {
   SE3.evf = SE3.evf || ((k) => { SE3.ev[k] = (SE3.ev[k] || 0) + 1; });
   // les notes des modules s'ajoutent à la fenêtre « Nouveautés » existante (PATCH_NOTES)
   S2.note = function (k, c, t, d) { S2.notes.push([k, c, t, d]); };
-  S2.flushNotes = function () { if (!S2.notes.length) return; let N = PATCH_NOTES.find((n) => n.v === 7); if (!N) { N = { v: 7, n: 'Mise à jour 7 — Shinobi 2 : le meilleur d’Éternel II', items: [] }; PATCH_NOTES.unshift(N); } for (const it of S2.notes) if (!N.items.some((x) => x[2] === it[2])) N.items.push(it); S2.notes = []; };
+  S2.flushNotes = function () { if (!S2.notes.length) return; let N = PATCH_NOTES.find((n) => n.v === 7); if (!N) { N = { v: 7, n: 'Shinobi 2 — ports d’Éternel II (rig, réactions, constellations, bijū, secrets…)', items: [] }; PATCH_NOTES.unshift(N); } for (const it of S2.notes) if (!N.items.some((x) => x[2] === it[2])) N.items.push(it); S2.notes = []; };
   S2.rf = () => { try { const p = Profile.data; return !p || !p.settings || p.settings.rf2 !== false; } catch (e) { return true; } };
   S2.alive = (v) => v && !v.dead && v.hp > 0;
 })();
@@ -11208,6 +11208,413 @@ function techCard2(id, p, opts = {}) {
   const bg = UI.tab_guide; if (bg) UI.tab_guide = function () { bg.apply(this, arguments); const g = $('#tabbody'); if (!g) return; const d = document.createElement('div'); d.className = 'panel'; d.style.marginTop = '12px';
     d.innerHTML = '<h3>Réactions multi-éléments et dōjutsu</h3><p class="muted">Touchez une même cible avec 3, 4 ou 5 natures différentes en moins de 5 s.</p>' + Object.values(RX).map((R) => `<p><b style="color:${R.c}">${R.k} ${R.n}</b> — ${R.d}</p>`).join(''); g.appendChild(d); };
   S2.note('rx', '#ffc23d', 'Réactions triples, quadruples et quintuple', '10 triples, 5 quadruples, 1 quintuple (Six Voies), plus 6 réactions dōjutsu liées aux pupilles. Elles complètent les réactions doubles existantes.');
+})();
+/* Shinobi 2 v8 — Les neuf bijū canon : fusion avec les Bêtes de la base (mêmes ids de sauvegarde, kits élémentaires canon) */
+(function(){
+  const NINE = {
+    kazegarasu: { n: 'Shukaku', t: 'Tanuki des Sables', tails: 1, el: 'terre', sp: 'shukaku', c: '#c9a46b', c2: '#3a5a9a', tc: '#e2c27a', tc2: '#7a5a2a', dz: 0.8, host: 'Bouclier de sable automatique (−15 % de dégâts), chakra +20 %', zone: 'ash', word: 'Sable' },
+    raigo: { n: 'Matatabi', t: 'Chat aux Flammes Bleues', tails: 2, el: 'feu', sp: 'matatabi', c: '#2a5aa8', c2: '#7fd0ff', tc: '#4aa8ff', tc2: '#dff4ff', dz: 0.9, host: 'Vitesse +15 %, vos flammes deviennent bleues (+15 % feu)', zone: 'blackfire', word: 'Flamme bleue' },
+    shinroku: { n: 'Isobu', t: 'Tortue de Corail', tails: 3, el: 'eau', sp: 'isobu', c: '#6a8a7a', c2: '#ff8a8a', tc: '#7fd6c8', tc2: '#ffd0d0', dz: 0.95, host: 'Armure +20 %, régénération dans l’eau', zone: 'roots', word: 'Corail' },
+    yogan: { n: 'Son Gokū', t: 'Singe de Lave', tails: 4, el: 'lave', sp: 'songoku', c: '#a8321e', c2: '#ffcf6b', tc: '#ff4a1f', tc2: '#ffd36b', dz: 1.0, host: 'Immunité au feu, coups brûlants', zone: 'lava', word: 'Lave' },
+    hyokaku: { n: 'Kokuō', t: 'Cheval-Dauphin de Vapeur', tails: 5, el: 'vapeur', sp: 'kokuo', c: '#e8e4dc', c2: '#ff6a6a', tc: '#f2f0f8', tc2: '#ffb0b0', dz: 1.0, host: 'Vos coups chauffent (+20°), ruées plus fortes', zone: 'steam', word: 'Vapeur' },
+    iwagoro: { n: 'Saiken', t: 'Limace Corrosive', tails: 6, el: 'eau', sp: 'saiken', c: '#d8e8f0', c2: '#ffd36b', tc: '#b6ff6b', tc2: '#f0ffd0', dz: 1.05, host: 'Coups empoisonnés, insensible au recul', zone: 'poison', word: 'Acide' },
+    dokusasori: { n: 'Chōmei', t: 'Scarabée Volant', tails: 7, el: 'vent', sp: 'chomei', c: '#3a8a3a', c2: '#ffb13d', tc: '#9cff3d', tc2: '#f0ffd0', dz: 1.05, host: 'Esquives +1, vole au-dessus des zones', zone: 'ash', word: 'Poudre' },
+    mizuchi: { n: 'Gyūki', t: 'Bœuf-Pieuvre', tails: 8, el: 'tempete', sp: 'gyuki', c: '#7a4a6a', c2: '#ffe9c0', tc: '#b07aff', tc2: '#f0e0ff', dz: 1.2, host: 'Chakra +50 %, l’encre aveugle les attaquants', zone: 'mist', word: 'Encre' },
+    hoo: { n: 'Kurama', t: 'Renard à Neuf Queues', tails: 9, el: 'feu', sp: 'kurama', c: '#e86a1a', c2: '#2a1408', tc: '#ff8a2b', tc2: '#ffe0a0', dz: 1.3, host: 'Une renaissance par mission, feu +40 %, régénération', zone: 'fire', word: 'Kyūbi' },
+  };
+  const BODY = { kazegarasu: ['quad', 'bear'], raigo: ['quad', 'wolf'], shinroku: ['quad', 'boar'], yogan: ['quad', 'bear'], hyokaku: ['quad', 'deer'], iwagoro: ['serpent', null], dokusasori: ['bird', 'crane'], mizuchi: ['serpent', null], hoo: ['quad', 'wolf'] };
+  for (const B of BEASTS) { const N = NINE[B.id]; if (!N) continue; const keepHost = B.host; Object.assign(B, { n: N.n, t: N.t, c: N.c, c2: N.c2, body: BODY[B.id][0], sp: BODY[B.id][1] || B.sp, host: keepHost, canonEl: N.el, word: N.word }); }
+  // Kits propres (V1 signature, V2 signature, forme complète signature, bijūdama)
+  const K = {
+    kazegarasu: [['Cercueil de Sable', 'terre', 'bind', 5, 40, { rng: 440, dur: 2, st: { slow: 2 } }, 'Le sable enferme la cible et l’écrase.'],
+      ['Tsunami de Sable', 'terre', 'wave', 7, 46, { w: 300, spd: 420, life: 1, kb: 600, trail: 'ash' }, 'Une vague de sable qui aveugle sur son passage.'],
+      ['Balle d’Air Sablée', 'vent', 'proj', 6, 120, { r: 34, spd: 560, life: 1.3, ex: 220, zone: { t: 'ash', r: 160, dur: 6 } }, 'Shukaku se frappe le ventre : un boulet d’air chargé de sable.']],
+    raigo: [['Griffes Bleues', 'feu', 'nova', 3, 60, { r: 160, kb: 500, st: { heat: 40 }, zone: { t: 'blackfire', r: 120, dur: 3 } }, 'Des griffes de flammes bleues tout autour.'],
+      ['Boules de Feu Félines', 'feu', 'proj', 5, 50, { cnt: 3, spr: 0.5, r: 22, spd: 520, life: 1.2, ex: 110, hom: 2, zone: { t: 'blackfire', r: 70, dur: 3 } }, 'Trois flammes bleues qui chassent.'],
+      ['Mer de Flammes Bleues', 'feu', 'nova', 8, 140, { r: 360, kb: 600, delay: 0.4, zone: { t: 'blackfire', r: 260, dur: 5 } }, 'Le sol entier prend feu en bleu.']],
+    shinroku: [['Carapace', 'eau', 'buff', 10, 0, { dur: 6, buff: 'granite' }, 'Armure de carapace : +30 % d’armure.'],
+      ['Récif de Corail', 'eau', 'rain', 6, 40, { cnt: 7, r: 70, rng: 480, st: { root: 1.5, wet: 1 }, zone: { t: 'roots', r: 70, dur: 4 } }, 'Le corail jaillit sous les ennemis et les fige.'],
+      ['Roulade Carapace', 'eau', 'dash', 5, 130, { rng: 560, w: 120, kb: 900 }, 'Isobu se roule dans sa carapace et écrase tout.']],
+    yogan: [['Poings de Lave', 'lave', 'cone', 3, 60, { rng: 240, arc: 0.9, st: { heat: 45 } }, 'Rafale de coups de poing en fusion.'],
+      ['Pluie de Lave', 'lave', 'rain', 7, 48, { cnt: 8, r: 70, rng: 520, zone: { t: 'lava', r: 70, dur: 5 } }, 'Le singe crache des globes de lave.'],
+      ['Éruption', 'lave', 'nova', 8, 150, { r: 320, delay: 0.5, st: { knockup: 1, heat: 60 }, zone: { t: 'lava', r: 240, dur: 6 } }, 'Le sol devient volcan.']],
+    hyokaku: [['Charge de Vapeur', 'vapeur', 'dash', 3, 70, { rng: 420, w: 80, st: { heat: 30 } }, 'Ruée bouillante à la corne.'],
+      ['Geysers Brûlants', 'vapeur', 'rain', 6, 44, { cnt: 6, r: 70, rng: 480, st: { heat: 30, wet: 1, knockup: 0.5 }, zone: { t: 'steam', r: 70, dur: 4 } }, 'Des geysers sous les ennemis.'],
+      ['Explosion de Vapeur', 'vapeur', 'nova', 8, 160, { r: 340, kb: 1100, delay: 0.4, zone: { t: 'steam', r: 240, dur: 5 } }, 'Toute la vapeur du corps est relâchée d’un coup.']],
+    iwagoro: [['Bulle Acide', 'eau', 'proj', 3, 40, { cnt: 4, spr: 0.7, r: 16, spd: 320, life: 1.6, ex: 70, st: { poison: 4 } }, 'Des bulles qui rongent.'],
+      ['Brume Corrosive', 'eau', 'nova', 7, 40, { r: 240, st: { poison: 6, slow: 2 }, zone: { t: 'poison', r: 220, dur: 6 } }, 'Un nuage acide ronge tout autour.'],
+      ['Déferlante de Bave', 'eau', 'wave', 7, 120, { w: 360, spd: 380, life: 1.2, kb: 700, st: { poison: 6 }, trail: 'poison' }, 'Une vague de bave corrosive.']],
+    dokusasori: [['Envol', 'vent', 'teleport', 3, 50, { rng: 560 }, 'Chōmei s’envole et retombe derrière la cible.'],
+      ['Poudre Éblouissante', 'vent', 'cone', 6, 30, { rng: 360, arc: 1.1, st: { slow: 2 }, zone: { t: 'ash', r: 150, dur: 5 } }, 'Les ailes répandent une poudre qui aveugle.'],
+      ['Essaim Lumineux', 'vent', 'rain', 7, 60, { cnt: 12, r: 55, rng: 600 }, 'Un essaim d’insectes de chakra s’abat partout.']],
+    mizuchi: [['Jet d’Encre', 'tempete', 'cone', 4, 36, { rng: 340, arc: 0.8, zone: { t: 'mist', r: 140, dur: 5 }, st: { slow: 2 } }, 'L’encre aveugle et engloue.'],
+      ['Tentacules', 'tempete', 'bind', 5, 50, { rng: 520, dur: 1.5, pull: 1 }, 'Un tentacule saisit la cible et la ramène.'],
+      ['Lariat Tentaculaire', 'tempete', 'nova', 7, 150, { r: 340, kb: 1300, delay: 0.3, st: { shock: 0.6 } }, 'Huit tentacules balaient la zone.']],
+    hoo: [['Griffe du Kyūbi', 'feu', 'nova', 2.5, 60, { r: 160, kb: 600, st: { heat: 30 } }, 'Griffes de chakra rouge.'],
+      ['Rugissement Kyūbi', 'feu', 'cone', 6, 60, { rng: 420, arc: 1.1, kb: 1300 }, 'Le hurlement du renard renverse tout.'],
+      ['Rafale de Bijūdama', 'neutre', 'proj', 9, 140, { cnt: 3, spr: 0.4, r: 26, spd: 420, life: 1.8, ex: 220, shape: 'bijuu', grow: 30, rMax: 70 }, 'Trois bijūdama d’affilée.']],
+  };
+  // Kits canon : remplacent les techniques élémentaires de manteau (b_el1..3_<bête>) ; orbes renommés en Bijūdama
+  for (const id in K) { const B = BEASTS.find((b) => b.id === id); if (!B) continue;
+    K[id].forEach((a, i) => { const old = TECH['b_el' + (i + 1) + '_' + id] || {}; M('b_el' + (i + 1) + '_' + id, a[0], 'bete', a[1], a[2], old.cost || [14, 22, 32][i], a[3], a[4], Object.assign({ beastId: id, canon: 1 }, a[5]), a[6]); });
+    const ren = { b_miniorbe: 'Mini Bijūdama', b_orbe1: 'Bijūdama', b_orbe2: 'Bijūdama Rapide', b_orbe2u: 'Grande Bijūdama', b_pluieorbes: 'Rafale de Mini Bijūdama', b_pluieorbes3: 'Pluie de Bijūdama', b_orbeprim: 'Bijūdama Ultime', b_symbiose: 'Bijūdama Rasengan', b_rafale3: 'Rafale de Bijūdama', b_spirale: 'Bijūdama Rasen-Shuriken' };
+    for (const k in ren) { const t = TECH[k + '_' + id]; if (t) { t.n = ren[k] + ' — ' + B.n; } }
+  }
+  if (MODES.bete) { MODES.bete.n = 'Mode Jinchūriki'; const sn = ['Manteau de chakra (Version 1)', 'Manteau Version 2', 'Transformation complète du Bijū', 'Mode Chakra du Bijū (Symbiose)']; MODES.bete.stages.forEach((s, i) => { if (sn[i]) s.n = sn[i]; }); }
+  if (window.BEAST_PATHS) { if (BEAST_PATHS.incarnation) BEAST_PATHS.incarnation.n = 'Transformation complète du Bijū'; if (BEAST_PATHS.symbiose) BEAST_PATHS.symbiose.n = 'Mode Chakra du Bijū'; }
+  S2.biju = { NINE, K };
+  S2.note('bj', '#ff8a2b', 'Les neuf bijū', 'Shukaku, Matatabi, Isobu, Son Gokū, Kokuō, Saiken, Chōmei, Gyūki et Kurama remplacent les bêtes (sauvegardes conservées). Chaque bijū a ses 3 techniques canon en manteau, et ses orbes deviennent des Bijūdama.');
+})();
+/* ===== v3.3 SECRET & UNIQUE TECHNIQUE UPDATE — moteur et 50 techniques ===== */
+(function () {
+  const SE33 = (window.SE33 = { ents: [], ev: {}, LIST: [] });
+  const foes = (u, x, y, r) => G.units.filter((v) => alive(v) && !v.decoy && v.team !== u.team && (r == null || dist2(v.x, v.y, x, y) < r * r));
+  const allies = (u, x, y, r) => G.units.filter((v) => alive(v) && v.team === u.team && dist2(v.x, v.y, x, y) < r * r);
+  const nearest = (u, x, y, r = 900) => foes(u, x, y, r).sort((a, b) => dist2(a.x, a.y, x, y) - dist2(b.x, b.y, x, y))[0];
+  const hit = (u, v, T, mul = 1, o = {}) => dealDamage(u, v, T.dmg * techPower(u, T) * mul, Object.assign({ el: T.el, tech: T.id }, o));
+  const area = (u, T, x, y, r, mul = 1, o = {}) => { const l = foes(u, x, y, r); for (const v of l) hit(u, v, T, mul, o); return l; };
+  const ent = (o) => { o.t = 0; o.life = o.life || 3; SE33.ents.push(o); return o; };
+  const push = (v, x, y, f) => { if (v.boss) f *= 0.3; const a = Math.atan2(v.y - y, v.x - x); v.vx += Math.cos(a) * f; v.vy += Math.sin(a) * f; };
+  const boom = (x, y, r, c, el) => { FX.ring(x, y, c, 10, r, 0.5, 12); FX.element(x, y, 20, el || 'feu', 1.6); Post.shock(x, y, 0.8, r); Cam.add(0.4); Audio.play('boom'); };
+  const glow = (ctx, x, y, r, c, a = 1) => { const g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, rgba(c, 0.9 * a)); g.addColorStop(1, rgba(c, 0)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill(); };
+  const tpt = (u, a, tgt, d) => (tgt && alive(tgt) ? { x: tgt.x, y: tgt.y } : { x: u.x + Math.cos(a) * d, y: u.y + Math.sin(a) * d });
+  Object.assign(SE33, { foes, nearest, hit, area, ent, push, boom, glow });
+  // proj générique piloté (homing, forme dessinée)
+  function seeker(u, T, x, y, a, o) {
+    return ent(Object.assign({ x, y, a, spd: 380, turn: 3, r: 14, life: 3, upd(e, dt) {
+      const tg = e.tg && alive(e.tg) ? e.tg : (e.tg = nearest(u, e.x, e.y, 700)); if (tg && e.turn) { const ta = Math.atan2(tg.y - e.y, tg.x - e.x); let d = ((ta - e.a + Math.PI * 3) % TAU) - Math.PI; e.a += clamp(d, -e.turn * dt, e.turn * dt); }
+      e.x += Math.cos(e.a) * e.spd * dt; e.y += Math.sin(e.a) * e.spd * dt; e.onMove && e.onMove(e, dt);
+      const v = foes(u, e.x, e.y, e.r + 16)[0]; if (v) { e.onHit ? e.onHit(e, v) : hit(u, v, T, e.mul || 1); if (!e.pierce) e.dead = 1; }
+      if (G.map && (e.x < 0 || e.y < 0 || e.x > G.map.w || e.y > G.map.h)) e.dead = 1; } }, o));
+  }
+  SE33.seeker = seeker;
+  const H = {};
+  const S = (id, n, who, el, cd, cost, dmg, tags, desc, fn, ch) => { T(id, n, 'secret', el, 'sig33', cost, cd, dmg, 5, { s33: 1, who, tags33: tags, sig33: id }, desc); H[id] = fn; SE33.LIST.push({ id, who, ch }); };
+  SE33.H = H;
+  /* ---------- Deidara ---------- */
+  S('dei_c1', 'C1 : Araignées d’Argile', 'deidara', 'explosion', 6, 18, 36, ['Invocation', 'AoE'], 'Des araignées d’argile courent vers les ennemis et explosent au contact. Katsu !', (u, T, a, tg, m) => {
+    for (let i = 0; i < 3 + m; i++) seeker(u, T, u.x, u.y, a + (i - 1.5) * 0.5, { spd: 230, turn: 4, life: 4, draw(ctx, e) { const s = 1 + Math.sin(e.t * 30) * 0.15; ctx.fillStyle = '#f2ead8'; ctx.strokeStyle = '#0d0a14'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(e.x, e.y - 6, 8, 6 * s, 0, 0, TAU); ctx.fill(); ctx.stroke(); for (let k = 0; k < 4; k++) { const l = Math.sin(e.t * 25 + k) * 3; ctx.beginPath(); ctx.moveTo(e.x - 6, e.y - 5 + k * 2); ctx.lineTo(e.x - 12, e.y + l); ctx.moveTo(e.x + 6, e.y - 5 + k * 2); ctx.lineTo(e.x + 12, e.y - l); ctx.stroke(); } },
+      onHit(e, v) { area(u, T, e.x, e.y, 80); boom(e.x, e.y, 80, '#ffe9a0', 'explosion'); e.dead = 1; } });
+    FX.text(u.x, u.y - 90, 'Katsu !', '#ffe9a0', 16);
+  }, { t: 'arena', who: 'deidara' });
+  S('dei_c2', 'C2 : Dragon d’Argile', 'deidara', 'explosion', 14, 30, 30, ['Invocation', 'AoE'], 'Un dragon d’argile survole la zone et largue des bombes pendant 5 s.', (u, T, a, tg, m) => {
+    const p0 = tpt(u, a, tg, 300); ent({ x: u.x, y: u.y, life: 5, drop: 0, upd(e, dt) { const tgv = nearest(u, e.x, e.y, 800) || p0; const tx = tgv.x + Math.cos(e.t * 2) * 120, ty = tgv.y + Math.sin(e.t * 2) * 80; e.x += (tx - e.x) * dt * 2; e.y += (ty - e.y) * dt * 2; e.drop -= dt; if (e.drop <= 0) { e.drop = 0.6 - m * 0.1; const bx = e.x, by = e.y; G.warns.push({ x: bx, y: by, r: 70, t: 0.5, max: 0.5, c: '#ffe9a0' }); G.delayed.push({ t: 0.5, f: () => { area(u, T, bx, by, 70); boom(bx, by, 70, '#ffe9a0', 'explosion'); } }); } },
+      draw(ctx, e) { const y = e.y - 120; ctx.save(); ctx.translate(e.x, y); ctx.fillStyle = '#f2ead8'; ctx.strokeStyle = '#0d0a14'; ctx.lineWidth = 2; const w = Math.sin(e.t * 10) * 14; ctx.beginPath(); ctx.moveTo(-30, 0); ctx.lineTo(0, -6); ctx.lineTo(30, 0); ctx.lineTo(0, 8); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.moveTo(-6, 0); ctx.lineTo(-20, -30 - w); ctx.lineTo(8, -2); ctx.moveTo(-6, 2); ctx.lineTo(-20, 30 + w); ctx.lineTo(8, 4); ctx.fill(); ctx.stroke(); ctx.restore(); ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(e.x, e.y, 30, 8, 0, 0, TAU); ctx.fill(); } });
+  }, { t: 'arena', who: 'deidara' });
+  S('dei_c3', 'C3 : Bombe Géante', 'deidara', 'explosion', 16, 40, 150, ['AoE', 'Projectile'], 'Une énorme statue d’argile tombe en cloche puis explose sur une très large zone.', (u, T, a, tg, m) => {
+    const p = tpt(u, a, tg, 380); const R = 220 + m * 30; G.warns.push({ x: p.x, y: p.y, r: R, t: 1.4, max: 1.4, c: '#ffd36b' });
+    ent({ x: u.x, y: u.y, tx: p.x, ty: p.y, life: 1.4, upd(e, dt) { const k = e.t / 1.4; e.cx = lerp(e.x, e.tx, k); e.cy = lerp(e.y, e.ty, k); e.z = Math.sin(k * Math.PI) * 260; if (e.t + dt >= 1.4) { area(u, T, e.tx, e.ty, R); boom(e.tx, e.ty, R, '#ffd36b', 'explosion'); FX.text(e.tx, e.ty - 120, 'L’art est une explosion !', '#ffd36b', 18, true); G.flashA = 0.4; G.flashC = '#fff2c0'; Cam.add(1); } },
+      draw(ctx, e) { if (e.cx == null) return; ctx.fillStyle = '#f2ead8'; ctx.strokeStyle = '#0d0a14'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(e.cx, e.cy - e.z, 22, 0, TAU); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.arc(e.cx, e.cy - e.z - 22, 9, 0, TAU); ctx.fill(); ctx.stroke(); } });
+  }, { t: 'arena', who: 'deidara' });
+  S('dei_c4', 'C4 : Karura', 'deidara', 'explosion', 22, 50, 14, ['AoE', 'Contrôle'], 'Un nuage de nano-bombes invisible : les ennemis dedans se désintègrent de l’intérieur.', (u, T, a, tg, m) => {
+    const p = tpt(u, a, tg, 300); ent({ x: p.x, y: p.y, life: 4 + m, tk: 0, upd(e, dt) { e.tk -= dt; if (e.tk <= 0) { e.tk = 0.35; for (const v of area(u, T, e.x, e.y, 200, 1 + e.t * 0.3, { noMark: 1 })) { FX.add({ type: 'spark', x: v.x + rand(-10, 10), y: v.y, z: rand(10, 60), vx: rand(-60, 60), vy: rand(-60, 60), c: '#ffe9a0', size: 3, life: 0.3 }); v.st.slow = Math.max(v.st.slow || 0, 0.5); } } if (e.t + dt >= e.life) area(u, T, e.x, e.y, 200, 6); },
+      draw(ctx, e) { ctx.fillStyle = 'rgba(255,233,160,0.10)'; ctx.beginPath(); ctx.arc(e.x, e.y, 200, 0, TAU); ctx.fill(); ctx.fillStyle = '#ffe9a0'; for (let i = 0; i < 40; i++) { const an = i * 2.4 + e.t * 0.6, rr = (i * 37) % 190; ctx.fillRect(e.x + Math.cos(an) * rr, e.y + Math.sin(an) * rr * 0.6 - 20, 1.6, 1.6); } } });
+  }, { t: 'kills', n: 150 });
+  /* ---------- Sasori ---------- */
+  S('sas_hiruko', 'Hiruko', 'sasori', 'neutre', 12, 20, 40, ['Défense', 'Mêlée'], 'Tu t’abrites dans la marionnette blindée : armure +50 % et la queue empoisonnée frappe tout ce qui approche.', (u, T, a, tg, m) => {
+    u.buffs.granite = Math.max(u.buffs.granite || 0, 4 + m); ent({ x: u.x, y: u.y, life: 4 + m, tk: 0, upd(e, dt) { e.x = u.x; e.y = u.y; e.tk -= dt; if (e.tk <= 0) { const v = nearest(u, u.x, u.y, 170); if (v) { e.tk = 0.7; e.sx = v.x; e.sy = v.y; e.st = 0.15; hit(u, v, T, 1, { st: { poison: 4 } }); } } e.st = (e.st || 0) - dt; }, draw(ctx, e) { ctx.strokeStyle = '#6a4a3a'; ctx.lineWidth = 6; ctx.beginPath(); ctx.ellipse(e.x, e.y - 20, 26, 22, 0, Math.PI, TAU); ctx.stroke(); if (e.st > 0) { ctx.strokeStyle = '#9cff6b'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(e.x, e.y - 40); ctx.quadraticCurveTo(e.x, e.y - 90, e.sx, e.sy - 30); ctx.stroke(); } } });
+  }, { t: 'arena', who: 'sasori' });
+  S('sas_kazekage', 'Marionnette du Troisième Kazekage', 'sasori', 'terre', 18, 40, 30, ['Invocation', 'AoE'], 'La marionnette déploie le sable de fer : des pointes noires jaillissent en grappe autour d’elle.', (u, T, a, tg, m) => {
+    const p = { x: u.x + Math.cos(a) * 90, y: u.y + Math.sin(a) * 90 }; ent({ x: p.x, y: p.y, life: 6, tk: 0.6, upd(e, dt) { e.tk -= dt; if (e.tk <= 0) { e.tk = 1.2 - m * 0.2; const v = nearest(u, e.x, e.y, 520); if (v) { const vx = v.x, vy = v.y; G.warns.push({ x: vx, y: vy, r: 80, t: 0.35, max: 0.35, c: '#4a4a5a' }); G.delayed.push({ t: 0.35, f: () => { area(u, T, vx, vy, 80, 1, { st: { slow: 1.5 } }); for (let k = 0; k < 7; k++) FX.add({ type: 'debris', x: vx + rand(-40, 40), y: vy + rand(-25, 25), z: 0, vx: 0, vy: 0, vz: rand(300, 500), g: 1600, size: rand(4, 8), c: '#2a2a34', life: 0.6, rot: 0, vr: 0 }); } }); } } },
+      draw(ctx, e) { ctx.fillStyle = '#3a2a4a'; ctx.strokeStyle = '#0d0a14'; ctx.lineWidth = 2; ctx.fillRect(e.x - 9, e.y - 46, 18, 40); ctx.strokeRect(e.x - 9, e.y - 46, 18, 40); ctx.beginPath(); ctx.arc(e.x, e.y - 54, 9, 0, TAU); ctx.fill(); ctx.stroke(); ctx.strokeStyle = 'rgba(200,200,255,0.5)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(e.x, e.y - 60); ctx.lineTo(u.x, u.y - 40); ctx.stroke(); } });
+  }, { t: 'arena', who: 'sasori' });
+  S('sas_cent', 'Cent Marionnettes', 'sasori', 'neutre', 24, 50, 30, ['Invocation', 'AoE'], 'Un cercle de marionnettes se referme sur toi et frappe tout ce qui est à l’intérieur.', (u, T, a, tg, m) => {
+    const c = tpt(u, a, tg, 200); const n = 10 + m * 2; for (let i = 0; i < n; i++) { const an = (i / n) * TAU; ent({ x: c.x + Math.cos(an) * 320, y: c.y + Math.sin(an) * 200, an, life: 1.6, upd(e, dt) { const k = clamp(e.t / 1.1, 0, 1); e.px = c.x + Math.cos(e.an) * 320 * (1 - k * 0.85); e.py = c.y + Math.sin(e.an) * 200 * (1 - k * 0.85); if (!e.hit && k >= 1) { e.hit = 1; area(u, T, e.px, e.py, 70); FX.slash(e.px, e.py, 30, 30, -1, 1, '#c9b8ff', 5); } }, draw(ctx, e) { if (e.px == null) return; ctx.fillStyle = '#5a3a4a'; ctx.strokeStyle = '#0d0a14'; ctx.fillRect(e.px - 5, e.py - 30, 10, 24); ctx.strokeRect(e.px - 5, e.py - 30, 10, 24); ctx.beginPath(); ctx.arc(e.px, e.py - 36, 6, 0, TAU); ctx.fill(); ctx.stroke(); } }); }
+  }, { t: 'wins', n: 5 });
+  /* ---------- Gaara ---------- */
+  S('gaa_cercueil', 'Cercueil du Désert', 'gaara', 'terre', 10, 25, 110, ['Contrôle'], 'Le sable enveloppe la cible (immobilisée 1,2 s), puis Funérailles : le sable l’écrase.', (u, T, a, tg, m) => {
+    const v = tg && alive(tg) ? tg : nearest(u, u.x, u.y, 520); if (!v) return; v.st.bound = Math.max(v.st.bound || 0, 1.2 + m * 0.2); ent({ v, life: 1.3, upd(e) { if (e.t >= 1.15 && !e.done) { e.done = 1; hit(u, v, T, 1 + m * 0.15); FX.element(v.x, v.y, 30, 'terre', 2); FX.text(v.x, v.y - 90, 'Funérailles', '#d8b870', 16); Cam.add(0.5); Audio.play('heavy'); } }, draw(ctx, e) { const k = clamp(e.t / 0.8, 0, 1); ctx.fillStyle = '#d8b870'; ctx.strokeStyle = '#7a5a2a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(e.v.x, e.v.y - 30 * k, 22, 34 * k + 4, 0, 0, TAU); ctx.fill(); ctx.stroke(); for (let i = 0; i < 12; i++) ctx.fillRect(e.v.x + rand(-26, 26), e.v.y - rand(0, 70) * k, 2, 2); } });
+  }, { t: 'arena', who: 'gaara' });
+  S('gaa_bouclier', 'Sphère de Sable Absolue', 'gaara', 'terre', 14, 25, 0, ['Défense'], 'Une sphère de sable : invulnérable 2 s et les projectiles proches sont réduits en poussière.', (u, T, a, tg, m) => {
+    u.buffs.shrInv = Math.max(u.buffs.shrInv || 0, 1.6 + m * 0.4); ent({ life: 1.6 + m * 0.4, upd(e) { for (const p of G.projs) if (p.owner && p.owner.team !== u.team && dist2(p.x, p.y, u.x, u.y) < 200 * 200) { p.life = 0; p.dead = true; FX.element(p.x, p.y, 20, 'terre', 0.6); } }, draw(ctx, e) { ctx.fillStyle = 'rgba(216,184,112,0.75)'; ctx.strokeStyle = '#7a5a2a'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(u.x, u.y - 30, 44, 0, TAU); ctx.fill(); ctx.stroke(); ctx.strokeStyle = 'rgba(122,90,42,0.6)'; for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc(u.x, u.y - 30, 44 - i * 10, e.t * 3 + i, e.t * 3 + i + 2); ctx.stroke(); } } });
+  }, { t: 'arena', who: 'gaara' });
+  S('gaa_tsunami', 'Tsunami de Sable Impérial', 'gaara', 'terre', 16, 35, 60, ['AoE', 'Contrôle'], 'Un anneau de sable s’élargit autour de toi et pousse tout, laissant des cendres aveuglantes.', (u, T, a, tg, m) => {
+    const hitset = new Set(); ent({ x: u.x, y: u.y, life: 1.2, upd(e) { const R = 40 + e.t * (300 + m * 50); for (const v of foes(u, e.x, e.y, R)) if (!hitset.has(v)) { hitset.add(v); hit(u, v, T); push(v, e.x, e.y, 700); v.st.blind = 2; } }, draw(ctx, e) { const R = 40 + e.t * (300 + m * 50); ctx.strokeStyle = rgba('#d8b870', 1 - e.t / 1.2); ctx.lineWidth = 26; ctx.beginPath(); ctx.ellipse(e.x, e.y, R, R * 0.6, 0, 0, TAU); ctx.stroke(); } });
+    addZone('ash', u.x, u.y, 240, 4, u);
+  }, { t: 'reac', n: 40 });
+  /* ---------- Kakuzu ---------- */
+  S('kak_fils', 'Fils de Jiongu', 'kakuzu', 'terre', 9, 15, 20, ['Contrôle', 'Soutien'], 'Des fils noirs s’accrochent à la cible : ils la tirent vers toi et volent sa vie pendant 2,5 s.', (u, T, a, tg, m) => {
+    const v = tg && alive(tg) ? tg : nearest(u, u.x, u.y, 560); if (!v) return; ent({ v, life: 2.5, tk: 0, upd(e, dt) { if (!alive(v)) return (e.dead = 1); e.tk -= dt; if (e.tk <= 0) { e.tk = 0.5; const d = hit(u, v, T, 1); healUnit(u, (d || 10) * (0.5 + m * 0.2), u, true); } const an = Math.atan2(u.y - v.y, u.x - v.x); if (!v.boss) { v.vx += Math.cos(an) * 900 * dt; v.vy += Math.sin(an) * 900 * dt; } },
+      draw(ctx, e) { ctx.strokeStyle = '#1a1a22'; ctx.lineWidth = 2; for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.moveTo(u.x, u.y - 34); ctx.quadraticCurveTo((u.x + v.x) / 2 + Math.sin(e.t * 8 + i) * 20, (u.y + v.y) / 2 - 40 + i * 6, v.x, v.y - 30); ctx.stroke(); } } });
+  }, { t: 'arena', who: 'kakuzu' });
+  S('kak_masques', 'Cinq Cœurs : Masques', 'kakuzu', 'neutre', 20, 40, 34, ['Invocation', 'Projectile'], 'Quatre masques en orbite tirent chacun leur élément (feu, vent, foudre, eau) sur l’ennemi le plus proche.', (u, T, a, tg, m) => {
+    const els = [['feu', '#ff6a2b'], ['vent', '#6fe8c0'], ['foudre', '#ffe23f'], ['eau', '#3f9dff']]; els.forEach(([el, c], i) => ent({ life: 6, tk: i * 0.4, upd(e, dt) { const an = G.t * 1.5 + (i / 4) * TAU; e.x = u.x + Math.cos(an) * 60; e.y = u.y + Math.sin(an) * 40; e.tk -= dt; if (e.tk <= 0) { e.tk = 1.6 - m * 0.2; const v = nearest(u, e.x, e.y, 600); if (v) { FX.bolt(e.x, e.y, 40, v.x, v.y, 30, c, 0.2, 3); hit(u, v, T, 1, { el }); } } }, draw(ctx, e) { if (e.x == null) return; ctx.fillStyle = '#e8e4dc'; ctx.strokeStyle = c; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(e.x, e.y - 50, 9, 11, 0, 0, TAU); ctx.fill(); ctx.stroke(); ctx.fillStyle = c; ctx.fillRect(e.x - 5, e.y - 53, 3, 2); ctx.fillRect(e.x + 2, e.y - 53, 3, 2); } }));
+  }, { t: 'kills', n: 300 });
+  /* ---------- Hidan ---------- */
+  S('hid_rituel', 'Rituel de Jashin', 'hidan', 'neutre', 20, 30, 0, ['Contrôle'], 'Trace le symbole au sol et maudit la cible la plus proche : tant que tu es dans le cercle, chaque dégât que tu subis lui est infligé x2.', (u, T, a, tg, m) => {
+    const v = tg && alive(tg) ? tg : nearest(u, u.x, u.y, 600); if (!v) return; const x = u.x, y = u.y; u._jashin = { v, x, y, until: G.t + 6 + m }; FX.text(v.x, v.y - 90, 'Maudit', '#ff3b3b', 16); Audio.play('gong');
+    ent({ life: 6 + m, draw(ctx, e) { ctx.strokeStyle = '#d63c3c'; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(x, y, 80, 48, 0, 0, TAU); ctx.stroke(); ctx.beginPath(); for (let i = 0; i < 3; i++) { const an = -Math.PI / 2 + (i * TAU) / 3; const bn = -Math.PI / 2 + ((i + 1) * TAU) / 3; ctx.moveTo(x + Math.cos(an) * 80, y + Math.sin(an) * 48); ctx.lineTo(x + Math.cos(bn) * 80, y + Math.sin(bn) * 48); } ctx.stroke(); if (alive(v)) { ctx.strokeStyle = 'rgba(214,60,60,0.5)'; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(v.x, v.y); ctx.stroke(); } } });
+  }, { t: 'arena', who: 'hidan' });
+  /* ---------- Shino ---------- */
+  S('shi_essaim', 'Essaim de Kikaichū', 'shino', 'neutre', 10, 20, 8, ['Contrôle', 'Invocation'], 'Un essaim d’insectes poursuit la cible : il ronge son chakra et la ralentit pendant 5 s.', (u, T, a, tg, m) => {
+    const v0 = tg && alive(tg) ? tg : nearest(u, u.x, u.y, 600); ent({ x: u.x, y: u.y, life: 5 + m, tk: 0, upd(e, dt) { const v = v0 && alive(v0) ? v0 : nearest(u, e.x, e.y, 500); if (!v) return; e.x += (v.x - e.x) * dt * 3; e.y += (v.y - e.y) * dt * 3; e.tk -= dt; if (e.tk <= 0 && dist(e.x, e.y, v.x, v.y) < 50) { e.tk = 0.5; hit(u, v, T); v.ch = Math.max(0, (v.ch || 0) - 6 * m); u.ch = Math.min(u.maxCh, u.ch + 3 * m); v.st.slow = Math.max(v.st.slow || 0, 0.6); } }, draw(ctx, e) { ctx.fillStyle = '#1a1a10'; for (let i = 0; i < 40; i++) { const an = i * 1.7 + e.t * (3 + (i % 5)); const r = 10 + ((i * 13) % 28); ctx.fillRect(e.x + Math.cos(an) * r, e.y - 30 + Math.sin(an * 1.3) * r * 0.7, 2, 2); } } });
+  }, { t: 'reac', n: 15 });
+  /* ---------- Lee / Gai ---------- */
+  S('lee_lotus', 'Lotus Recto', 'lee', 'neutre', 8, 15, 120, ['Mêlée'], 'Coup de pied qui envoie la cible en l’air, tu la rattrapes et tu l’écrases au sol en vrille.', (u, T, a, tg, m) => {
+    const v = nearest(u, u.x, u.y, 180); if (!v) { u.vx += Math.cos(a) * 900; u.vy += Math.sin(a) * 900; return; } v.st.bound = 0.9; ent({ life: 1, upd(e) { e.z = Math.sin(clamp(e.t / 0.9, 0, 1) * Math.PI) * 160; if (e.t > 0.85 && !e.done) { e.done = 1; hit(u, v, T, 1 + m * 0.2, { melee: 1 }); FX.ring(v.x, v.y, '#ffffff', 10, 140, 0.4, 10); Cam.add(0.7); Audio.play('heavy'); FX.text(v.x, v.y - 80, 'Lotus !', '#7dffb0', 18, true); } }, draw(ctx, e) { if (!alive(v)) return; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(v.x, v.y - (e.z || 0) - 30, 26, e.t * 20, e.t * 20 + 4); ctx.stroke(); ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.setLineDash([4, 6]); ctx.beginPath(); ctx.moveTo(v.x, v.y); ctx.lineTo(v.x, v.y - (e.z || 0)); ctx.stroke(); ctx.setLineDash([]); } });
+  }, { t: 'arena', who: 'lee' });
+  S('gai_portes', 'Huit Portes', 'gai', 'neutre', 4, 0, 0, ['Soutien'], 'Chaque activation ouvre une porte de plus (jusqu’à 3/5/8 selon la maîtrise) : vitesse et dégâts montent, mais la vie fond. Recharge du chakra = refermer.', (u, T, a, tg, m) => {
+    const max = [0, 3, 5, 8][m]; u._gates = Math.min(max, (u._gates || 0) + 1); u._gatesT = G.t; u.buffs.gates = 30; FX.ring(u.x, u.y, '#7dffb0', 10, 120 + u._gates * 15, 0.5, 8); FX.text(u.x, u.y - 100, ['', 'Porte de l’Ouverture', 'Porte du Repos', 'Porte de la Vie', 'Porte de la Douleur', 'Porte de la Limite', 'Porte de la Vue', 'Porte de l’Émerveillement', 'PORTE DE LA MORT'][u._gates], u._gates >= 8 ? '#ff3b3b' : '#7dffb0', 16 + u._gates, true); Audio.play('charge'); SE33.ev.gates = u._gates;
+  }, { t: 'wins', n: 3 });
+  S('gai_paon', 'Paon du Matin', 'gai', 'feu', 9, 20, 16, ['Mêlée', 'Projectile'], 'Une rafale de poings si rapides qu’ils s’enflamment : un éventail de dizaines d’impacts de feu.', (u, T, a, tg, m) => {
+    for (let i = 0; i < 14 + m * 4; i++) G.delayed.push({ t: i * 0.04, f: () => { const an = a + rand(-0.5, 0.5); seeker(u, T, u.x + Math.cos(an) * 20, u.y + Math.sin(an) * 20, an, { spd: 900, turn: 0, life: 0.35, r: 10, draw(ctx, e) { glow(ctx, e.x, e.y - 30, 14, '#ff8a3d'); ctx.fillStyle = '#fff2c0'; ctx.beginPath(); ctx.arc(e.x, e.y - 30, 4, 0, TAU); ctx.fill(); } }); } });
+  }, { t: 'arena', who: 'gai' });
+  S('gai_elephant', 'Pas de l’Éléphant', 'gai', 'vent', 12, 30, 70, ['AoE'], 'Cinq poings invisibles frappent l’air : cinq colonnes de pression avancent en ligne droite.', (u, T, a, tg, m) => {
+    for (let i = 0; i < 5; i++) G.delayed.push({ t: i * 0.22, f: () => { const d = 110 + i * 100; const x = u.x + Math.cos(a) * d, y = u.y + Math.sin(a) * d; area(u, T, x, y, 80 + m * 10, 1, { kb: 600, kbA: a }); FX.ring(x, y, '#e8f4ff', 70, 10, 0.3, 14); FX.smoke(x, y, 10, '#e8e4f0', 6, 16, 120); Audio.play('heavy'); Cam.add(0.3); } });
+  }, { t: 'kills', n: 200 });
+  /* ---------- Neji ---------- */
+  S('nej_64', 'Soixante-Quatre Poings', 'neji', 'neutre', 11, 20, 6, ['Mêlée', 'Contrôle'], 'Tu verrouilles la cible et frappes ses points de chakra : 2, 4, 8, 16, 32, 64 ! La cible est scellée.', (u, T, a, tg, m) => {
+    const v = nearest(u, u.x, u.y, 160); if (!v) return; v.st.bound = 1.4; let n = 0; for (const c of [2, 4, 8, 16, 32, 64]) G.delayed.push({ t: n++ * 0.22, f: () => { if (!alive(v)) return; hit(u, v, T, c / 8 * (1 + m * 0.1), { melee: 1, noMark: 1 }); FX.text(v.x + rand(-20, 20), v.y - 60 - n * 6, c + ' poings', '#7ff0ff', 12 + n); for (let k = 0; k < Math.min(12, c / 4); k++) FX.add({ type: 'spark', x: v.x + rand(-14, 14), y: v.y, z: rand(20, 60), vx: rand(-80, 80), vy: rand(-80, 80), c: '#7ff0ff', size: 3, life: 0.25 }); } });
+    G.delayed.push({ t: 1.4, f: () => alive(v) && applyStatus(u, v, { seal: 3 + m }) });
+  }, { t: 'arena', who: 'neji' });
+  S('nej_kaiten', 'Tourbillon Divin', 'neji', 'neutre', 8, 20, 40, ['Défense', 'AoE'], 'Tu tournes sur toi-même : un dôme de chakra repousse tout et détruit les projectiles.', (u, T, a, tg, m) => {
+    u.iframe = Math.max(u.iframe || 0, 0.8 + m * 0.2); ent({ life: 0.8 + m * 0.2, tk: 0, upd(e, dt) { e.tk -= dt; if (e.tk <= 0) { e.tk = 0.2; for (const v of area(u, T, u.x, u.y, 130, 0.4)) push(v, u.x, u.y, 500); } for (const p of G.projs) if (p.owner && p.owner.team !== u.team && dist2(p.x, p.y, u.x, u.y) < 140 * 140) { p.life = 0; p.dead = true; } }, draw(ctx, e) { ctx.fillStyle = 'rgba(127,240,255,0.18)'; ctx.strokeStyle = 'rgba(200,250,255,0.8)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(u.x, u.y - 20, 120, 80, 0, 0, TAU); ctx.fill(); ctx.stroke(); for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.ellipse(u.x, u.y - 20, 120 - i * 14, 80 - i * 10, e.t * 12 + i, 0, 1.6); ctx.stroke(); } } });
+  }, { t: 'reac', n: 25 });
+  /* ---------- Kisame ---------- */
+  S('kis_requins', 'Mille Requins Voraces', 'kisame', 'eau', 12, 30, 24, ['Projectile', 'AoE'], 'Une vague de requins surgit derrière toi et fond sur les ennemis en meute.', (u, T, a, tg, m) => {
+    for (let i = 0; i < 8 + m * 2; i++) { const an = a + Math.PI + rand(-0.8, 0.8); seeker(u, T, u.x + Math.cos(an) * 120, u.y + Math.sin(an) * 80, a + rand(-0.3, 0.3), { spd: 420 + rand(0, 120), turn: 2.5, life: 2.4, r: 16, mul: 1, onMove(e) { if (Math.random() < 0.3) FX.add({ type: 'glow', x: e.x, y: e.y, z: 20, c: '#3f9dff', size: 8, life: 0.3 }); }, draw(ctx, e) { ctx.save(); ctx.translate(e.x, e.y - 24); ctx.rotate(e.a); ctx.fillStyle = '#3f6aa0'; ctx.strokeStyle = '#0d0a14'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(18, 0); ctx.quadraticCurveTo(0, -10, -16, 0); ctx.quadraticCurveTo(0, 8, 18, 0); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0, -6); ctx.lineTo(-6, -16); ctx.lineTo(-8, -4); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.moveTo(-14, 0); ctx.lineTo(-22, -7); ctx.lineTo(-22, 7); ctx.closePath(); ctx.fill(); ctx.restore(); }, onHit(e, v) { hit(u, v, T, 1, { st: { wet: 1 } }); FX.element(e.x, e.y, 20, 'eau', 0.8); e.dead = 1; } }); }
+  }, { t: 'arena', who: 'kisame' });
+  S('kis_prison', 'Grande Prison de Requins', 'kisame', 'eau', 20, 40, 10, ['Contrôle', 'Défense'], 'Un dôme d’eau géant centré sur toi : tu y nages vite et régénères, les ennemis suffoquent et ralentissent.', (u, T, a, tg, m) => {
+    const x = u.x, y = u.y; ent({ life: 5 + m, tk: 0, upd(e, dt) { e.tk -= dt; if (e.tk <= 0) { e.tk = 0.5; for (const v of area(u, T, x, y, 260, 1, { st: { wet: 1 } })) { v.st.slow = 1; v.ch = Math.max(0, (v.ch || 0) - 5); } if (dist(u.x, u.y, x, y) < 260) { healUnit(u, u.maxHp * 0.015 * m, u, true); u.ch = Math.min(u.maxCh, u.ch + 4); } } }, draw(ctx, e) { ctx.fillStyle = 'rgba(63,157,255,0.22)'; ctx.strokeStyle = 'rgba(160,210,255,0.8)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(x, y - 30, 260, 170, 0, 0, TAU); ctx.fill(); ctx.stroke(); ctx.fillStyle = 'rgba(255,255,255,0.4)'; for (let i = 0; i < 14; i++) { const by = y + 100 - ((e.t * 60 + i * 23) % 260); ctx.beginPath(); ctx.arc(x - 200 + i * 30, by, 3, 0, TAU); ctx.fill(); } } });
+  }, { t: 'wins', n: 8 });
+  /* ---------- Konan ---------- */
+  S('kon_papillons', 'Papillons de Papier', 'konan', 'vent', 8, 20, 22, ['Projectile'], 'Une nuée de papillons de papier lents et têtus qui explosent en confettis tranchants.', (u, T, a, tg, m) => {
+    for (let i = 0; i < 10 + m * 3; i++) seeker(u, T, u.x, u.y, a + rand(-1.2, 1.2), { spd: 180 + rand(0, 80), turn: 3, life: 4, r: 10, draw(ctx, e) { const f = Math.abs(Math.sin(e.t * 14)); ctx.fillStyle = '#ece6f8'; ctx.strokeStyle = '#a090c8'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(e.x, e.y - 30); ctx.lineTo(e.x - 9 * f, e.y - 38); ctx.lineTo(e.x - 7 * f, e.y - 24); ctx.closePath(); ctx.moveTo(e.x, e.y - 30); ctx.lineTo(e.x + 9 * f, e.y - 38); ctx.lineTo(e.x + 7 * f, e.y - 24); ctx.closePath(); ctx.fill(); ctx.stroke(); }, onHit(e, v) { hit(u, v, T, 1, { st: { bleed: 1.5 } }); for (let k = 0; k < 6; k++) FX.add({ type: 'spark', x: e.x, y: e.y, z: 30, vx: rand(-150, 150), vy: rand(-150, 150), c: '#ffffff', size: 3, life: 0.4 }); e.dead = 1; } });
+  }, { t: 'arena', who: 'konan' });
+  S('kon_mer', 'Mer de Papiers Explosifs', 'konan', 'explosion', 18, 45, 50, ['AoE'], 'Un tapis de parchemins explosifs se déroule devant toi, puis détone en chaîne, du plus proche au plus loin.', (u, T, a, tg, m) => {
+    const n = 10 + m * 3; const pts = []; for (let i = 0; i < n; i++) { const d = 60 + i * 45; pts.push({ x: u.x + Math.cos(a) * d + rand(-30, 30), y: u.y + Math.sin(a) * d + rand(-30, 30) }); }
+    ent({ life: 1 + n * 0.08, pts, upd(e) { e.pts.forEach((p, i) => { if (!p.b && e.t > 0.6 + i * 0.07) { p.b = 1; area(u, T, p.x, p.y, 70); FX.ring(p.x, p.y, '#ffd36b', 8, 70, 0.3, 8); FX.element(p.x, p.y, 10, 'explosion', 0.8); if (i % 3 === 0) Audio.play('boom'); } }); }, draw(ctx, e) { for (const p of e.pts) if (!p.b) { ctx.fillStyle = '#f2ead8'; ctx.fillRect(p.x - 7, p.y - 4, 14, 8); ctx.fillStyle = '#d63c3c'; ctx.fillRect(p.x - 2, p.y - 3, 4, 6); } } });
+  }, { t: 'kills', n: 120 });
+  /* ---------- Pain / Nagato ---------- */
+  S('pai_shinra', 'Shinra Tensei', 'pain', 'gravite', 10, 30, 60, ['AoE', 'Défense'], 'Une onde de répulsion absolue : tout est éjecté, les projectiles sont pulvérisés.', (u, T, a, tg, m) => {
+    for (const v of area(u, T, u.x, u.y, 260 + m * 40)) push(v, u.x, u.y, 1300); for (const p of G.projs) if (p.owner && p.owner.team !== u.team && dist2(p.x, p.y, u.x, u.y) < 300 * 300) { p.life = 0; p.dead = true; }
+    FX.ring(u.x, u.y, '#ffffff', 10, 320, 0.5, 20); Post.shock(u.x, u.y, 1.4, 340); Cam.add(0.8); Audio.play('boom'); FX.text(u.x, u.y - 110, 'Shinra Tensei', '#b7a3ff', 18, true);
+  }, { t: 'arena', who: 'pain' });
+  S('pai_bansho', 'Bansho Ten’in', 'pain', 'gravite', 7, 20, 60, ['Contrôle'], 'Attire violemment la cible jusqu’à toi et l’empale sur une tige de chakra.', (u, T, a, tg, m) => {
+    const v = tg && alive(tg) ? tg : nearest(u, u.x, u.y, 650); if (!v) return; ent({ v, x0: v.x, y0: v.y, life: 0.45, upd(e) { const k = e.t / 0.45; if (!v.boss) { v.x = lerp(e.x0, u.x + Math.cos(a) * 40, k); v.y = lerp(e.y0, u.y + Math.sin(a) * 40, k); } if (e.t > 0.4 && !e.d) { e.d = 1; hit(u, v, T, 1 + m * 0.2, { st: { bleed: 3 } }); FX.slash(v.x, v.y, 30, 30, -0.3, 0.3, '#b7a3ff', 6); } }, draw(ctx) { ctx.strokeStyle = 'rgba(183,163,255,0.8)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(u.x, u.y - 30); ctx.lineTo(v.x, v.y - 30); ctx.stroke(); } });
+  }, { t: 'arena', who: 'pain' });
+  S('pai_chemins', 'Les Six Chemins', 'pain', 'neutre', 30, 50, 0, ['Invocation'], 'Trois corps des Six Chemins combattent à tes côtés pendant 10 s (Deva, Asura, Animal).', (u, T, a, tg, m) => {
+    for (let i = 0; i < 2 + m; i++) { const s = spawnSummon(u, 'clone', u.x + Math.cos(i * 2) * 80, u.y + Math.sin(i * 2) * 60, 10); if (s) { s.name = ['Deva', 'Asura', 'Animal', 'Preta', 'Naraka'][i]; s.look = Object.assign({}, s.look || {}, { outfit: '#121018', scarf: '#d63c3c', hair: '#c86a2a' }); s.ms33fx = 'pain'; } } FX.kanji(u.x, u.y, 100, '輪', '#b7a3ff', 44, 1);
+  }, { t: 'wins', n: 10 });
+  S('pai_asura', 'Chemin Asura : Missiles', 'pain', 'explosion', 12, 30, 40, ['Projectile', 'AoE'], 'Le bras s’ouvre : une salve de missiles à tête chercheuse décrit de grandes courbes avant l’impact.', (u, T, a, tg, m) => {
+    for (let i = 0; i < 4 + m * 2; i++) G.delayed.push({ t: i * 0.1, f: () => seeker(u, T, u.x, u.y, a + Math.PI * (i % 2 ? 0.6 : -0.6), { spd: 360, turn: 4.5, life: 3, r: 10, onMove(e) { FX.add({ type: 'glow', x: e.x, y: e.y, z: 30, c: '#aaa', size: 6, life: 0.4 }); }, draw(ctx, e) { ctx.save(); ctx.translate(e.x, e.y - 30); ctx.rotate(e.a); ctx.fillStyle = '#c8d0dc'; ctx.fillRect(-8, -3, 16, 6); ctx.fillStyle = '#ff6a2b'; ctx.fillRect(-12, -2, 4, 4); ctx.restore(); }, onHit(e, v) { area(u, T, e.x, e.y, 70); boom(e.x, e.y, 70, '#ffae2e', 'explosion'); e.dead = 1; } }) });
+  }, { t: 'kills', n: 250 });
+  /* ---------- Tobi / Obito ---------- */
+  S('tob_kamui', 'Kamui', 'obito', 'neutre', 14, 30, 90, ['Défense', 'Contrôle'], 'Tu deviens intangible 1,5 s, puis la spirale aspire la cible dans une autre dimension (2 s) ; elle revient blessée.', (u, T, a, tg, m) => {
+    u.iframe = Math.max(u.iframe || 0, 1.5); u.alpha = 0.4; G.delayed.push({ t: 1.5, f: () => (u.alpha = 1) }); const v = tg && alive(tg) ? tg : nearest(u, u.x, u.y, 500);
+    ent({ life: 1.5, draw(ctx, e) { ctx.strokeStyle = 'rgba(40,20,60,0.8)'; ctx.lineWidth = 3; for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.arc(u.x, u.y - 30, 14 + i * 7, e.t * 10 + i, e.t * 10 + i + 3.5); ctx.stroke(); } } });
+    if (v && !v.boss) { const ox = v.x, oy = v.y; G.delayed.push({ t: 0.3, f: () => { if (!alive(v)) return; v._kamui = 1; v.alpha = 0; v.st.bound = 2 + m * 0.5; v.iframe = 2 + m * 0.5; ent({ x: ox, y: oy, life: 2 + m * 0.5, draw(ctx, e) { ctx.strokeStyle = '#2a1440'; ctx.lineWidth = 2; for (let i = 0; i < 7; i++) { ctx.beginPath(); ctx.arc(e.x, e.y - 30, 8 + i * 6 * (1 - e.t / e.life), -e.t * 8 + i, -e.t * 8 + i + 3); ctx.stroke(); } }, upd(e) { if (alive(v)) { v.x = e.x; v.y = e.y; } if (e.t + 0.02 >= e.life && !e.d) { e.d = 1; v.alpha = 1; v.iframe = 0; v._kamui = 0; hit(u, v, T, 1 + m * 0.3); FX.text(v.x, v.y - 80, 'Retour de Kamui', '#c06bff', 15); } } }); } }); }
+    else if (v) hit(u, v, T, 0.7);
+  }, { t: 'arena', who: 'obito' });
+  /* ---------- Orochimaru ---------- */
+  S('oro_mains', 'Mains des Serpents Spectraux', 'orochimaru', 'neutre', 8, 20, 40, ['Contrôle'], 'Des serpents jaillissent de ta manche, ondulent jusqu’à la cible et l’enserrent.', (u, T, a, tg, m) => {
+    for (let i = 0; i < 2 + m; i++) seeker(u, T, u.x, u.y, a + (i - 1) * 0.3, { spd: 520, turn: 6, life: 1.4, r: 12, pts: [], onMove(e) { e.pts.push([e.x, e.y]); if (e.pts.length > 18) e.pts.shift(); }, draw(ctx, e) { ctx.strokeStyle = '#4a7a3a'; ctx.lineWidth = 6; ctx.lineCap = 'round'; ctx.beginPath(); e.pts.forEach(([x, y], k) => (k ? ctx.lineTo(x + Math.sin(k + e.t * 20) * 4, y - 30) : ctx.moveTo(x, y - 30))); ctx.stroke(); ctx.fillStyle = '#6a9a4a'; ctx.beginPath(); ctx.arc(e.x, e.y - 30, 6, 0, TAU); ctx.fill(); }, onHit(e, v) { hit(u, v, T, 1, { st: { poison: 3 } }); v.st.bound = Math.max(v.st.bound || 0, 1 + m * 0.3); e.dead = 1; } });
+  }, { t: 'arena', who: 'orochimaru' });
+  S('oro_manda', 'Invocation : Manda', 'orochimaru', 'neutre', 26, 50, 70, ['Invocation', 'AoE'], 'Le serpent géant Manda traverse l’arène en écrasant tout sur son passage.', (u, T, a, tg, m) => {
+    const segs = []; const hs = new Set(); ent({ x: u.x - Math.cos(a) * 200, y: u.y - Math.sin(a) * 200, life: 3, upd(e, dt) { e.x += Math.cos(a) * 520 * dt; e.y += Math.sin(a) * 520 * dt + Math.cos(e.t * 6) * 6; segs.unshift([e.x, e.y]); if (segs.length > 30) segs.pop(); for (const v of foes(u, e.x, e.y, 80 + m * 10)) if (!hs.has(v)) { hs.add(v); hit(u, v, T); push(v, e.x, e.y, 800); } }, draw(ctx, e) { for (let i = segs.length - 1; i >= 0; i -= 2) { const [x, y] = segs[i]; ctx.fillStyle = i % 4 ? '#5a3a7a' : '#7a5a9a'; ctx.strokeStyle = '#0d0a14'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y - 30, 30 - i * 0.5, 0, TAU); ctx.fill(); ctx.stroke(); } ctx.fillStyle = '#ffe23f'; ctx.fillRect(e.x + 6, e.y - 44, 5, 3); } });
+    Audio.play('roar'); FX.smoke(u.x, u.y, 20, '#e8e4f0', 14, 30, 160);
+  }, { t: 'wins', n: 6 });
+  S('oro_kusanagi', 'Kusanagi Extensible', 'orochimaru', 'neutre', 6, 15, 70, ['Mêlée'], 'L’épée jaillit de ta gorge et s’allonge instantanément sur 600 : elle transperce tout sur la ligne.', (u, T, a, tg, m) => {
+    const L = 500 + m * 100; for (const v of foes(u)) { const dx = v.x - u.x, dy = v.y - u.y; const t = dx * Math.cos(a) + dy * Math.sin(a); const d = Math.abs(-dx * Math.sin(a) + dy * Math.cos(a)); if (t > 0 && t < L && d < 26 + v.r) hit(u, v, T, 1, { melee: 1, st: { bleed: 2 } }); }
+    ent({ life: 0.35, draw(ctx, e) { const k = Math.min(1, e.t / 0.08); ctx.strokeStyle = '#e8e8f0'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(u.x, u.y - 34); ctx.lineTo(u.x + Math.cos(a) * L * k, u.y - 34 + Math.sin(a) * L * k); ctx.stroke(); ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 10; ctx.stroke(); } }); Audio.play('unsheathe');
+  }, { t: 'reac', n: 60 });
+  /* ---------- Kimimaro ---------- */
+  S('kim_doigts', 'Balles Digitales', 'kimimaro', 'neutre', 4, 10, 26, ['Projectile'], 'Tes phalanges deviennent des balles d’os : cinq tirs ultra-rapides en ligne.', (u, T, a, tg, m) => {
+    for (let i = 0; i < 4 + m; i++) G.delayed.push({ t: i * 0.08, f: () => seeker(u, T, u.x, u.y, a + rand(-0.05, 0.05), { spd: 1100, turn: 0, life: 0.7, r: 8, pierce: m >= 3, draw(ctx, e) { ctx.fillStyle = '#f4f0e6'; ctx.strokeStyle = '#8a8070'; ctx.save(); ctx.translate(e.x, e.y - 30); ctx.rotate(e.a); ctx.beginPath(); ctx.ellipse(0, 0, 8, 3, 0, 0, TAU); ctx.fill(); ctx.stroke(); ctx.restore(); } }) });
+  }, { t: 'arena', who: 'kimimaro' });
+  S('kim_fougeres', 'Danse des Fougères', 'kimimaro', 'neutre', 18, 40, 30, ['AoE', 'Défense'], 'Une forêt d’os jaillit du sol autour de toi pendant 3 s, au hasard puis sous chaque ennemi.', (u, T, a, tg, m) => {
+    const x = u.x, y = u.y; const spikes = []; ent({ life: 3.5, tk: 0, upd(e, dt) { e.tk -= dt; if (e.tk <= 0 && e.t < 3) { e.tk = 0.12; const v = Math.random() < 0.4 ? nearest(u, x, y, 360) : null; const sx = v ? v.x : x + rand(-340, 340), sy = v ? v.y : y + rand(-220, 220); spikes.push({ x: sx, y: sy, t: G.t }); area(u, T, sx, sy, 40 + m * 6); } }, draw(ctx) { for (const s of spikes) { const k = clamp((G.t - s.t) / 0.15, 0, 1) * clamp((s.t + 1.2 - G.t) / 0.3, 0, 1); if (k <= 0) continue; ctx.fillStyle = '#f4f0e6'; ctx.strokeStyle = '#8a8070'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(s.x - 7, s.y); ctx.lineTo(s.x, s.y - 60 * k); ctx.lineTo(s.x + 7, s.y); ctx.closePath(); ctx.fill(); ctx.stroke(); } } });
+  }, { t: 'kills', n: 180 });
+  /* ---------- Minato ---------- */
+  S('min_kunai', 'Kunaï Marqué', 'minato', 'foudre', 2, 5, 20, ['Projectile', 'Mobilité'], 'Lance un kunaï à trois lames qui se plante au sol : c’est une balise pour le Dieu du Tonnerre Volant (3 max).', (u, T, a, tg, m) => {
+    u._marks = (u._marks || []).filter((k) => !k.dead); if (u._marks.length >= 3) u._marks.shift().dead = 1;
+    const k = seeker(u, T, u.x, u.y, a, { spd: 900, turn: 0, life: 0.5, r: 8, stuck: 0, upd0: null, draw(ctx, e) { ctx.save(); ctx.translate(e.x, e.y - (e.landed ? 4 : 30)); ctx.rotate(e.landed ? -1.2 : e.a); ctx.strokeStyle = '#c8d0dc'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-8, 0); ctx.lineTo(10, 0); ctx.moveTo(6, -5); ctx.lineTo(12, 0); ctx.lineTo(6, 5); ctx.stroke(); ctx.restore(); if (e.landed) { ctx.fillStyle = '#ffe23f'; ctx.font = '700 9px sans-serif'; ctx.fillText('飛雷神', e.x - 14, e.y - 22); } }, onHit(e, v) { hit(u, v, T); v._hirai = G.t + 8; e.dead = 1; FX.text(v.x, v.y - 80, 'Marqué', '#ffe23f', 13); } });
+    k.life = 20; const baseU = k.upd; k.upd = (e, dt) => { if (e.landed) return; if (e.t > 0.5) { e.landed = 1; return; } baseU(e, dt); }; u._marks.push(k);
+  }, { t: 'arena', who: 'minato' });
+  S('min_hiraishin', 'Dieu du Tonnerre Volant', 'minato', 'foudre', 3, 15, 80, ['Mobilité', 'Mêlée'], 'Téléportation instantanée sur le kunaï ou l’ennemi marqué le plus proche, suivie d’un Rasengan éclair.', (u, T, a, tg, m) => {
+    const marks = (u._marks || []).filter((k) => !k.dead && k.landed).map((k) => ({ x: k.x, y: k.y, k })); for (const v of foes(u)) if (v._hirai > G.t) marks.push({ x: v.x, y: v.y, v });
+    if (!marks.length) { FX.text(u.x, u.y - 90, 'Aucune balise', '#ffc0c0', 13); return; } marks.sort((p, q) => dist2(p.x, p.y, Cam.x + (Mouse.x - VW / 2) / Cam.zoom, Cam.y + (Mouse.y - VH / 2) / Cam.zoom) - dist2(q.x, q.y, Cam.x + (Mouse.x - VW / 2) / Cam.zoom, Cam.y + (Mouse.y - VH / 2) / Cam.zoom));
+    const t = u.isPlayer ? marks[0] : marks.find((p) => p.v) || marks[0]; FX.bolt(u.x, u.y, 30, t.x, t.y, 30, '#ffe23f', 0.3, 4); FX.smoke(u.x, u.y, 20, '#ffe23f', 6, 14, 80); u.x = t.x - (t.v ? 40 : 0); u.y = t.y; u.iframe = Math.max(u.iframe || 0, 0.3); if (t.k && m < 3) t.k.dead = 1;
+    area(u, T, u.x, u.y, 110, 1 + m * 0.15, { kb: 600 }); FX.ring(u.x, u.y, '#ffe23f', 10, 120, 0.3, 8); FX.glow(u.x, u.y, 40, '#9fd8ff', 60, 0.3); Audio.play('thunder'); SE33.ev.hiraishin = 1;
+  }, { t: 'arena', who: 'minato' });
+  /* ---------- Jiraiya ---------- */
+  S('jir_huile', 'Feu et Huile du Crapaud', 'jiraiya', 'feu', 12, 35, 50, ['AoE'], 'Le crapaud crache de l’huile en cône (ralentit), puis ton souffle l’embrase : un brasier géant.', (u, T, a, tg, m) => {
+    const pts = []; for (let i = 0; i < 6; i++) { const d = 80 + i * 55, an = a + rand(-0.3, 0.3); pts.push({ x: u.x + Math.cos(an) * d, y: u.y + Math.sin(an) * d }); }
+    ent({ life: 1.3, upd(e) { if (!e.o) { e.o = 1; for (const p of pts) for (const v of foes(u, p.x, p.y, 60)) v.st.slow = 2; } if (e.t > 0.7 && !e.f) { e.f = 1; for (const p of pts) { addZone('fire', p.x, p.y, 70 + m * 10, 4, u); area(u, T, p.x, p.y, 70, 1, { st: { heat: 60 } }); } boom(pts[3].x, pts[3].y, 200, '#ff6a2b', 'feu'); } }, draw(ctx, e) { if (e.f) return; for (const p of pts) { ctx.fillStyle = 'rgba(160,120,40,0.6)'; ctx.beginPath(); ctx.ellipse(p.x, p.y, 50, 26, 0, 0, TAU); ctx.fill(); } } });
+  }, { t: 'arena', who: 'jiraiya' });
+  S('jir_estomac', 'Estomac du Crapaud', 'jiraiya', 'neutre', 22, 40, 12, ['Contrôle'], 'Les parois de chair d’un crapaud géant engloutissent la zone : les ennemis y sont enracinés et digérés.', (u, T, a, tg, m) => {
+    const p = tpt(u, a, tg, 280); ent({ life: 4 + m, tk: 0, upd(e, dt) { e.tk -= dt; if (e.tk <= 0) { e.tk = 0.5; for (const v of area(u, T, p.x, p.y, 180)) v.st.root = Math.max(v.st.root || 0, 0.6); } }, draw(ctx, e) { ctx.fillStyle = 'rgba(180,60,80,0.35)'; ctx.strokeStyle = '#8a2a3a'; ctx.lineWidth = 6; ctx.beginPath(); for (let i = 0; i <= 24; i++) { const an = (i / 24) * TAU; const r = 180 + Math.sin(an * 5 + e.t * 3) * 10; i ? ctx.lineTo(p.x + Math.cos(an) * r, p.y + Math.sin(an) * r * 0.6) : ctx.moveTo(p.x + r, p.y); } ctx.closePath(); ctx.fill(); ctx.stroke(); } });
+  }, { t: 'wins', n: 4 });
+  /* ---------- Tsunade ---------- */
+  S('tsu_poing', 'Poing Céleste', 'tsunade', 'terre', 9, 25, 110, ['Mêlée', 'AoE'], 'Bond puis coup de poing au sol : le sol se fissure en étoile et projette tout en l’air.', (u, T, a, tg, m) => {
+    const p = tpt(u, a, tg, 260); ent({ x0: u.x, y0: u.y, life: 0.9, upd(e) { const k = clamp(e.t / 0.45, 0, 1); if (k < 1) { u.x = lerp(e.x0, p.x, k); u.y = lerp(e.y0, p.y, k); u.z = Math.sin(k * Math.PI) * 120; } else if (!e.d) { e.d = 1; u.z = 0; area(u, T, p.x, p.y, 180 + m * 30, 1, { st: { knockup: 1 }, melee: 1 }); Cam.add(1); Post.shock(p.x, p.y, 1.2, 260); Audio.play('heavy'); e.cr = []; for (let i = 0; i < 8; i++) e.cr.push(rand(TAU)); } }, draw(ctx, e) { if (!e.cr) return; ctx.strokeStyle = '#3a2a1c'; ctx.lineWidth = 3; for (const an of e.cr) { ctx.beginPath(); ctx.moveTo(p.x, p.y); let x = p.x, y = p.y; for (let s = 0; s < 4; s++) { x += Math.cos(an + rand(-0.3, 0.3)) * 45; y += Math.sin(an + rand(-0.3, 0.3)) * 28; ctx.lineTo(x, y); } ctx.stroke(); } } });
+  }, { t: 'arena', who: 'tsunade' });
+  S('tsu_byakugo', 'Byakugō : Création-Renaissance', 'tsunade', 'neutre', 30, 40, 0, ['Soutien'], 'Le sceau de ton front se libère : régénération massive pendant 6 s pour toi, la moitié pour les alliés proches.', (u, T, a, tg, m) => {
+    ent({ life: 6, tk: 0, upd(e, dt) { e.tk -= dt; if (e.tk <= 0) { e.tk = 0.5; healUnit(u, u.maxHp * (0.03 + m * 0.01), u); for (const v of allies(u, u.x, u.y, 250)) if (v !== u) healUnit(v, v.maxHp * 0.02 * m, u, true); } }, draw(ctx, e) { ctx.strokeStyle = 'rgba(160,80,220,0.7)'; ctx.lineWidth = 2; for (let i = 0; i < 6; i++) { const an = i + e.t; ctx.beginPath(); ctx.moveTo(u.x, u.y - 50); ctx.lineTo(u.x + Math.cos(an) * 30, u.y - 30 + Math.sin(an) * 30); ctx.stroke(); } ctx.fillStyle = '#c06bff'; ctx.beginPath(); ctx.moveTo(u.x, u.y - 66); ctx.lineTo(u.x - 4, u.y - 60); ctx.lineTo(u.x, u.y - 54); ctx.lineTo(u.x + 4, u.y - 60); ctx.fill(); } });
+  }, { t: 'reac', n: 30 });
+  /* ---------- Itachi ---------- */
+  S('ita_tsukuyomi', 'Tsukuyomi', 'itachi', 'illusion', 16, 40, 18, ['Contrôle'], 'Le monde devient rouge et noir : la cible est crucifiée dans l’illusion (3 s de transe) et subit 72 heures en quelques secondes.', (u, T, a, tg, m) => {
+    const v = tg && alive(tg) ? tg : nearest(u, u.x, u.y, 450); if (!v) return; v.st.trance = Math.max(v.st.trance || 0, 2 + m * 0.5); v.st.bound = 2 + m * 0.5; G.flashA = 0.4; G.flashC = '#a0101a'; SE33.tsuku = { v, until: G.t + 2 + m * 0.5 };
+    ent({ life: 2 + m * 0.5, tk: 0, upd(e, dt) { e.tk -= dt; if (e.tk <= 0) { e.tk = 0.3; if (alive(v)) hit(u, v, T, 1, { noMark: 1 }); } }, draw(ctx, e) { if (!alive(v)) return; ctx.strokeStyle = '#1a0408'; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(v.x, v.y + 5); ctx.lineTo(v.x, v.y - 80); ctx.moveTo(v.x - 26, v.y - 60); ctx.lineTo(v.x + 26, v.y - 60); ctx.stroke(); ctx.fillStyle = 'rgba(160,16,26,0.6)'; ctx.beginPath(); ctx.arc(v.x, v.y - 120, 30, 0, TAU); ctx.fill(); } });
+    FX.kanji(v.x, v.y, 110, '月', '#ff3b3b', 40, 1.5); Audio.play('gen');
+  }, { t: 'arena', who: 'itachi' });
+  S('ita_amaterasu', 'Amaterasu', 'itachi', 'noir', 14, 40, 30, ['Contrôle', 'AoE'], 'Les flammes noires naissent directement sur la cible, sans projectile, et se propagent à ceux qui la touchent.', (u, T, a, tg, m) => {
+    const v = tg && alive(tg) ? tg : nearest(u, u.x, u.y, 600); if (!v) return; hit(u, v, T, 1, { st: { black: 6 + m * 2 } }); addZone('blackfire', v.x, v.y, 60 + m * 15, 4, u); FX.element(v.x, v.y, 40, 'noir', 2); FX.text(v.x, v.y - 90, 'Amaterasu', '#c06bff', 16); G.flashA = 0.2; G.flashC = '#000000';
+    ent({ life: 4, tk: 0, upd(e, dt) { e.tk -= dt; if (e.tk <= 0 && alive(v)) { e.tk = 0.6; for (const w of foes(u, v.x, v.y, 90)) if (w !== v && !(w.st.black > 0)) { applyStatus(u, w, { black: 4 }); FX.bolt(v.x, v.y, 30, w.x, w.y, 30, '#2a0a3a', 0.3, 4); } } } });
+  }, { t: 'arena', who: 'itachi' });
+  S('ita_corbeaux', 'Clone de Corbeaux', 'itachi', 'illusion', 8, 15, 20, ['Mobilité', 'Défense'], 'Ton corps éclate en nuée de corbeaux : tu esquives tout, ils picorent les ennemis, puis tu réapparais derrière la cible.', (u, T, a, tg, m) => {
+    u.iframe = Math.max(u.iframe || 0, 0.8); const v = nearest(u, u.x, u.y, 600); const ox = u.x, oy = u.y;
+    for (let i = 0; i < 12 + m * 4; i++) seeker(u, T, ox + rand(-20, 20), oy + rand(-20, 20), rand(TAU), { spd: 300 + rand(0, 200), turn: 4, life: 1.6, r: 10, draw(ctx, e) { const f = Math.sin(e.t * 30) * 5; ctx.fillStyle = '#0e0a12'; ctx.beginPath(); ctx.moveTo(e.x - 8, e.y - 40 + f); ctx.lineTo(e.x, e.y - 36); ctx.lineTo(e.x + 8, e.y - 40 - f); ctx.lineTo(e.x, e.y - 33); ctx.fill(); } });
+    if (v) { u.x = v.x - Math.cos(angTo(u, v)) * 60; u.y = v.y - Math.sin(angTo(u, v)) * 60; } else { u.x += Math.cos(a) * 200; u.y += Math.sin(a) * 200; } FX.smoke(ox, oy, 20, '#2a2234', 8, 16, 100);
+  }, { t: 'kills', n: 100 });
+  /* ---------- Kakashi ---------- */
+  S('kak_raikiri', 'Raikiri', 'kakashi', 'foudre', 9, 25, 140, ['Mêlée', 'Mobilité'], 'Tu charges un éclair dans ta main (0,4 s, le chant de mille oiseaux) puis tu fonces : tout ce qui est sur la ligne est transpercé.', (u, T, a, tg, m) => {
+    u.act = { type: 'channel', t: 0, dur: 0.4 }; FX.glow(u.x, u.y, 40, '#9fd8ff', 50, 0.4); Audio.play('charge'); const hs = new Set();
+    G.delayed.push({ t: 0.4, f: () => { const L = 360 + m * 60; const x0 = u.x, y0 = u.y; ent({ life: 0.25, upd(e) { const k = clamp(e.t / 0.18, 0, 1); u.x = x0 + Math.cos(a) * L * k; u.y = y0 + Math.sin(a) * L * k; u.iframe = 0.1; for (const v of foes(u, u.x, u.y, 50)) if (!hs.has(v)) { hs.add(v); hit(u, v, T, 1, { melee: 1, st: { shock: 0.6 } }); FX.bolt(v.x, v.y, 30, v.x + rand(-40, 40), v.y + rand(-40, 40), 50, '#ffffff', 0.2, 3); } }, draw(ctx) { ctx.strokeStyle = 'rgba(160,220,255,0.9)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(x0, y0 - 30); for (let i = 1; i <= 8; i++) ctx.lineTo(lerp(x0, u.x, i / 8) + rand(-8, 8), lerp(y0, u.y, i / 8) - 30 + rand(-8, 8)); ctx.stroke(); } }); Audio.play('thunder'); } });
+  }, { t: 'arena', who: 'kakashi' });
+  S('kak_ninken', 'Meute des Huit Ninken', 'kakashi', 'neutre', 14, 25, 30, ['Invocation', 'Contrôle'], 'Huit chiens ninja surgissent du sol sous la cible et la mordent : immobilisée.', (u, T, a, tg, m) => {
+    const v = tg && alive(tg) ? tg : nearest(u, u.x, u.y, 600); if (!v) return; G.warns.push({ x: v.x, y: v.y, r: 60, t: 0.3, max: 0.3, c: '#c8c8d0' });
+    G.delayed.push({ t: 0.3, f: () => { if (!alive(v)) return; v.st.bound = 1.6 + m * 0.4; hit(u, v, T, 1); ent({ life: 1.6 + m * 0.4, draw(ctx) { if (!alive(v)) return; for (let i = 0; i < 8; i++) { const an = (i / 8) * TAU; const x = v.x + Math.cos(an) * 26, y = v.y + Math.sin(an) * 14; ctx.fillStyle = '#7a6a5a'; ctx.strokeStyle = '#0d0a14'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(x, y - 8, 9, 6, an, 0, TAU); ctx.fill(); ctx.stroke(); } } }); } });
+  }, { t: 'arena', who: 'kakashi' });
+  /* ---------- Madara ---------- */
+  S('mad_meteore', 'Tengai Shinsei', 'madara', 'terre', 26, 60, 220, ['AoE'], 'L’ombre d’une météorite grandit au sol… puis elle s’écrase. Une seule ne suffit pas ? Maîtrise III : une deuxième.', (u, T, a, tg, m) => {
+    const fall = (p, dl) => { const R = 260; G.warns.push({ x: p.x, y: p.y, r: R, t: 2.4, max: 2.4, c: '#8a6236' }); ent({ life: 2.4 + dl, upd(e) { if (e.t < dl) return; if (e.t + 0.02 >= e.life && !e.d) { e.d = 1; area(u, T, p.x, p.y, R, 1, { st: { knockup: 1 } }); boom(p.x, p.y, R + 80, '#ffae2e', 'terre'); G.flashA = 0.6; G.flashC = '#fff2c0'; Cam.add(1.4); for (let i = 0; i < 30; i++) FX.add({ type: 'debris', x: p.x, y: p.y, z: 10, vx: rand(-500, 500), vy: rand(-300, 300), vz: rand(200, 600), g: 1200, size: rand(5, 12), c: '#5a4632', life: 1.2, rot: 0, vr: rand(-8, 8) }); } }, draw(ctx, e) { if (e.t < dl) return; const k = clamp((e.t - dl) / 2.4, 0, 1); ctx.fillStyle = 'rgba(0,0,0,' + 0.4 * k + ')'; ctx.beginPath(); ctx.ellipse(p.x, p.y, 260 * k, 150 * k, 0, 0, TAU); ctx.fill(); const z = (1 - k) * 900; ctx.fillStyle = '#5a4632'; ctx.strokeStyle = '#ff8a3d'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(p.x + (1 - k) * 300, p.y - z - 60, 70 + k * 60, 0, TAU); ctx.fill(); ctx.stroke(); } }); };
+    const p = tpt(u, a, tg, 360); fall(p, 0); if (m >= 3) fall({ x: p.x + 260, y: p.y + 60 }, 1.2); FX.text(u.x, u.y - 120, 'Tengai Shinsei', '#ffae2e', 20, true);
+  }, { t: 'arena', who: 'madara' });
+  S('mad_arbres', 'Naissance d’un Monde d’Arbres', 'madara', 'bois', 20, 45, 40, ['Contrôle', 'AoE'], 'Une forêt géante pousse en vague autour de toi : les racines enserrent et les troncs projettent.', (u, T, a, tg, m) => {
+    const trees = []; for (let i = 0; i < 18 + m * 4; i++) { const an = rand(TAU), d = rand(80, 380); trees.push({ x: u.x + Math.cos(an) * d, y: u.y + Math.sin(an) * d * 0.65, at: d / 600 }); }
+    ent({ life: 4, upd(e) { for (const t of trees) if (!t.d && e.t > t.at) { t.d = 1; for (const v of area(u, T, t.x, t.y, 60)) { v.st.root = Math.max(v.st.root || 0, 1.5); } } }, draw(ctx, e) { for (const t of trees) { if (e.t < t.at) continue; const k = clamp((e.t - t.at) / 0.3, 0, 1) * clamp((4 - e.t) / 0.5, 0, 1); ctx.fillStyle = '#5a3a1e'; ctx.fillRect(t.x - 6, t.y - 70 * k, 12, 70 * k); ctx.fillStyle = '#3f8a3a'; ctx.beginPath(); ctx.arc(t.x, t.y - 80 * k, 26 * k, 0, TAU); ctx.fill(); } } });
+  }, { t: 'reac', n: 80 });
+  /* ---------- Naruto ---------- */
+  S('nar_rasenshuriken', 'Rasenshuriken', 'naruto', 'vent', 12, 40, 30, ['Projectile', 'AoE'], 'Un shuriken de vent hurlant : à l’impact il devient une sphère de micro-lames qui hache tout pendant 1,5 s.', (u, T, a, tg, m) => {
+    seeker(u, T, u.x, u.y, a, { spd: 560, turn: 0.4, life: 1.6, r: 20, draw(ctx, e) { ctx.save(); ctx.translate(e.x, e.y - 34); glow(ctx, 0, 0, 40, '#bff8ff'); ctx.rotate(e.t * 30); ctx.fillStyle = 'rgba(220,255,255,0.8)'; for (let i = 0; i < 4; i++) { ctx.rotate(Math.PI / 2); ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(40, -8); ctx.lineTo(34, 6); ctx.closePath(); ctx.fill(); } ctx.fillStyle = '#4fa8ff'; ctx.beginPath(); ctx.arc(0, 0, 10, 0, TAU); ctx.fill(); ctx.restore(); },
+      onHit(e, v) { e.dead = 1; const x = e.x, y = e.y; ent({ life: 1.5, tk: 0, upd(f, dt) { f.tk -= dt; if (f.tk <= 0) { f.tk = 0.1; area(u, T, x, y, 140 + m * 20, 0.6, { noMark: f.t > 0.2 ? 1 : 0, st: { slow: 0.5 } }); } }, draw(ctx, f) { ctx.fillStyle = 'rgba(200,250,255,0.35)'; ctx.beginPath(); ctx.arc(x, y - 30, 140 + m * 20, 0, TAU); ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 1; for (let i = 0; i < 30; i++) { const an = rand(TAU), r = rand(20, 140); ctx.beginPath(); ctx.moveTo(x + Math.cos(an) * r, y - 30 + Math.sin(an) * r); ctx.lineTo(x + Math.cos(an + 0.3) * (r + 14), y - 30 + Math.sin(an + 0.3) * (r + 14)); ctx.stroke(); } } }); Audio.play('boom'); Cam.add(0.6); } });
+    Audio.play('wind', 1);
+  }, { t: 'arena', who: 'naruto' });
+  S('nar_clones', 'Multiclonage Supra', 'naruto', 'neutre', 18, 30, 0, ['Invocation'], 'Pouf ! Une foule de clones apparaît et se jette sur l’ennemi le plus proche.', (u, T, a, tg, m) => {
+    for (let i = 0; i < 3 + m * 2; i++) { const s = spawnSummon(u, 'clone', u.x + rand(-80, 80), u.y + rand(-60, 60), 6 + m); if (s) { s.maxHp *= 0.4; s.hp = s.maxHp; } FX.smoke(u.x + rand(-80, 80), u.y + rand(-60, 60), 20, '#e8e4f0', 4, 14, 60); } Audio.play('poof'); FX.text(u.x, u.y - 100, 'Kage Bunshin !', '#ff8a2b', 18, true);
+  }, { t: 'wins', n: 2 });
+  /* ---------- Sasuke ---------- */
+  S('sas_kirin', 'Kirin', 'sasuke', 'foudre', 24, 50, 230, ['AoE'], 'Un nuage d’orage se forme au-dessus de la cible, puis un dragon de foudre céleste s’abat en une fraction de seconde.', (u, T, a, tg, m) => {
+    const p = tpt(u, a, tg, 380); G.warns.push({ x: p.x, y: p.y, r: 170 + m * 20, t: 1.6, max: 1.6, c: '#9fd8ff' }); ent({ life: 1.7, draw(ctx, e) { const k = e.t / 1.6; ctx.fillStyle = 'rgba(30,30,50,' + 0.5 * k + ')'; ctx.beginPath(); ctx.ellipse(p.x, p.y - 260, 200 * k, 60 * k, 0, 0, TAU); ctx.fill(); if (e.t > 1.6) { ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 18; ctx.beginPath(); ctx.moveTo(p.x, p.y - 400); for (let i = 1; i <= 6; i++) ctx.lineTo(p.x + rand(-30, 30), p.y - 400 + i * 66); ctx.stroke(); } }, upd(e) { if (e.t >= 1.6 && !e.d) { e.d = 1; area(u, T, p.x, p.y, 170 + m * 20, 1, { st: { shock: 1 } }); G.flashA = 0.7; G.flashC = '#e8f6ff'; Cam.add(1.2); Audio.play('thunder'); FX.text(p.x, p.y - 140, 'KIRIN', '#9fd8ff', 24, true); } } });
+  }, { t: 'arena', who: 'sasuke' });
+  S('sas_nagashi', 'Chidori Nagashi', 'sasuke', 'foudre', 7, 15, 40, ['Défense', 'AoE'], 'Le courant parcourt ton corps : décharge en anneau qui paralyse tout ce qui te touche.', (u, T, a, tg, m) => {
+    for (const v of area(u, T, u.x, u.y, 130 + m * 20, 1, { st: { shock: 0.7 + m * 0.1 } })) FX.bolt(u.x, u.y, 30, v.x, v.y, 30, '#9fd8ff', 0.25, 3); ent({ life: 0.5, draw(ctx) { ctx.strokeStyle = '#cfefff'; ctx.lineWidth = 2; for (let i = 0; i < 14; i++) { const an = rand(TAU); ctx.beginPath(); ctx.moveTo(u.x, u.y - 30); ctx.lineTo(u.x + Math.cos(an) * 60, u.y - 30 + Math.sin(an) * 60); ctx.lineTo(u.x + Math.cos(an + 0.3) * 120, u.y - 30 + Math.sin(an + 0.3) * 110); ctx.stroke(); } } }); Audio.play('thunder');
+  }, { t: 'reac', n: 20 });
+  S('sas_kagutsuchi', 'Enton : Kagutsuchi', 'sasuke', 'noir', 16, 40, 40, ['Défense', 'Contrôle'], 'Tu façonnes les flammes noires : un mur de lances noires surgit devant toi et bloque le passage.', (u, T, a, tg, m) => {
+    const pts = []; for (let i = -4; i <= 4; i++) pts.push({ x: u.x + Math.cos(a) * 120 + Math.cos(a + Math.PI / 2) * i * 30, y: u.y + Math.sin(a) * 120 + Math.sin(a + Math.PI / 2) * i * 30 }); ent({ life: 4 + m, tk: 0, upd(e, dt) { for (const p of G.projs) if (p.owner && p.owner.team !== u.team && pts.some((q) => dist2(q.x, q.y, p.x, p.y) < 900)) { p.life = 0; p.dead = true; } e.tk -= dt; if (e.tk <= 0) { e.tk = 0.4; for (const q of pts) for (const v of foes(u, q.x, q.y, 30)) { hit(u, v, T, 0.5, { st: { black: 3 } }); push(v, u.x, u.y, 300); } } }, draw(ctx, e) { for (const q of pts) { ctx.fillStyle = '#1a0a24'; ctx.strokeStyle = '#c06bff'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(q.x - 7, q.y); ctx.lineTo(q.x, q.y - 70 - Math.sin(e.t * 9 + q.x) * 8); ctx.lineTo(q.x + 7, q.y); ctx.closePath(); ctx.fill(); ctx.stroke(); } } });
+  }, { t: 'kills', n: 220 });
+  /* ---------- Hinata / Temari / Shikamaru / Sakura / Killer B / Zabuza / Haku / Choji / Ino / Tenten ---------- */
+  S('shk_ombre', 'Manipulation des Ombres', 'shikamaru', 'ombre', 10, 20, 0, ['Contrôle'], 'Ton ombre file au sol jusqu’à la cible : liée, elle copie tes mouvements (immobilisée 2,5 s).', (u, T, a, tg, m) => {
+    seeker(u, T, u.x, u.y, a, { spd: 520, turn: 3, life: 1.4, r: 14, pts: [], onMove(e) { e.pts.push([e.x, e.y]); }, draw(ctx, e) { ctx.strokeStyle = 'rgba(10,6,16,0.8)'; ctx.lineWidth = 8; ctx.beginPath(); ctx.moveTo(u.x, u.y); for (const [x, y] of e.pts) ctx.lineTo(x, y); ctx.stroke(); }, onHit(e, v) { e.dead = 1; v.st.bound = 2.5 + m * 0.5; G.binds.push({ a: u, b: v, t: 2.5 + m * 0.5, c: '#1a1020' }); FX.text(v.x, v.y - 80, 'Ombre liée', '#c8c8d0', 14); } });
+  }, { t: 'reac', n: 10 });
+  S('tem_faux', 'Grande Faux de Vent', 'temari', 'vent', 9, 25, 50, ['AoE', 'Projectile'], 'Un coup d’éventail : trois croissants de vent géants balaient le terrain en éventail.', (u, T, a, tg, m) => {
+    for (let i = -1; i <= 1; i++) { const an = a + i * 0.35; const hs = new Set(); ent({ x: u.x, y: u.y, life: 0.9, upd(e, dt) { e.x += Math.cos(an) * 700 * dt; e.y += Math.sin(an) * 700 * dt; for (const v of foes(u, e.x, e.y, 60 + m * 10)) if (!hs.has(v)) { hs.add(v); hit(u, v, T, 1, { kb: 500, kbA: an }); } }, draw(ctx, e) { ctx.strokeStyle = 'rgba(200,255,240,0.85)'; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(e.x - Math.cos(an) * 30, e.y - 30 - Math.sin(an) * 30, 50, an - 1, an + 1); ctx.stroke(); } }); } Audio.play('swoosh');
+  }, { t: 'kills', n: 80 });
+  S('hin_lions', 'Poings des Lions Jumeaux', 'hinata', 'neutre', 10, 25, 70, ['Mêlée'], 'Deux têtes de lion de chakra enveloppent tes poings : chaque coup scelle le chakra et repousse.', (u, T, a, tg, m) => {
+    u._lions = G.t + 5 + m; ent({ life: 5 + m, draw(ctx, e) { for (const s of [-1, 1]) glow(ctx, u.x + s * 16, u.y - 30, 18, '#7fb8ff'); } }); const v = nearest(u, u.x, u.y, 140); if (v) hit(u, v, T, 1, { melee: 1, st: { seal: 2 } }); FX.text(u.x, u.y - 90, 'Lions Jumeaux', '#7fb8ff', 15);
+  }, { t: 'wins', n: 3 });
+  S('sak_poing', 'Coup de Poing Fracassant', 'sakura', 'terre', 8, 20, 90, ['Mêlée', 'AoE'], 'Un uppercut concentré sur un point : le sol se soulève en dalles qui frappent autour de l’impact.', (u, T, a, tg, m) => {
+    const x = u.x + Math.cos(a) * 70, y = u.y + Math.sin(a) * 70; area(u, T, x, y, 90, 1.3, { melee: 1, kb: 700, kbA: a }); for (let i = 0; i < 6; i++) { const an = (i / 6) * TAU; G.delayed.push({ t: 0.15, f: () => { const sx = x + Math.cos(an) * 110, sy = y + Math.sin(an) * 70; area(u, T, sx, sy, 50, 0.5, { st: { knockup: 0.6 } }); FX.add({ type: 'debris', x: sx, y: sy, z: 0, vx: 0, vy: 0, vz: 400, g: 1600, size: 14, c: '#7a5a3a', life: 0.6, rot: an, vr: 3 }); } }); } Cam.add(0.6); Audio.play('heavy');
+  }, { t: 'reac', n: 35 });
+  S('bee_encre', 'Encre de Killer Bee', 'killerbee', 'tempete', 9, 20, 30, ['Contrôle', 'Projectile'], 'Tu craches de l’encre en arc : flaques collantes qui ralentissent et aveuglent. Yeah !', (u, T, a, tg, m) => {
+    for (let i = 0; i < 4 + m; i++) { const d = 120 + i * 70, an = a + rand(-0.25, 0.25); const x = u.x + Math.cos(an) * d, y = u.y + Math.sin(an) * d; G.delayed.push({ t: i * 0.08, f: () => { area(u, T, x, y, 60, 1, { st: { slow: 2 } }); for (const v of foes(u, x, y, 60)) v.st.blind = 2; addZone('mud', x, y, 60, 4, u); FX.add({ type: 'glow', x, y, z: 5, c: '#1a1020', size: 40, life: 0.5 }); } }); } FX.text(u.x, u.y - 90, 'Yeah !', '#b07aff', 15);
+  }, { t: 'wins', n: 7 });
+  S('zab_brume', 'Brume Cachée et Meurtre Silencieux', 'zabuza', 'eau', 18, 30, 120, ['Contrôle', 'Mêlée'], 'Une brume épaisse : tu deviens invisible 3 s, puis ton couperet frappe dans le dos de la cible.', (u, T, a, tg, m) => {
+    addZone('mist', u.x, u.y, 260, 5, u); u.st.stealth = 3; u.alpha = 0.25; G.delayed.push({ t: 2.4, f: () => { u.alpha = 1; const v = nearest(u, u.x, u.y, 600); if (!v) return; const an = Math.atan2(v.y - u.y, v.x - u.x); u.x = v.x + Math.cos(an) * 40; u.y = v.y + Math.sin(an) * 40; hit(u, v, T, 1 + m * 0.2, { melee: 1, st: { bleed: 4 } }); FX.slash(v.x, v.y, 40, 60, -1.2, 1.2, '#e8e8f0', 10); FX.text(v.x, v.y - 90, 'Kubikiri !', '#e8e8f0', 16); Audio.play('heavy'); } });
+  }, { t: 'arena', who: 'zabuza' });
+  S('hak_miroirs', 'Miroirs de Glace Démoniaques', 'haku', 'glace', 20, 40, 14, ['Contrôle', 'Projectile'], 'Un dôme de miroirs de glace entoure la cible : des senbon fusent de chaque miroir, encore et encore.', (u, T, a, tg, m) => {
+    const v = tg && alive(tg) ? tg : nearest(u, u.x, u.y, 500); if (!v) return; const x = v.x, y = v.y; ent({ life: 3 + m, tk: 0, upd(e, dt) { e.tk -= dt; if (e.tk <= 0) { e.tk = 0.15; const i = randi(0, 11); const an = (i / 12) * TAU; const mx = x + Math.cos(an) * 120, my = y + Math.sin(an) * 80; const w = nearest(u, x, y, 130); if (w) { FX.bolt(mx, my, 40, w.x, w.y, 30, '#d8f6ff', 0.12, 2); hit(u, w, T, 1, { st: { heat: -10 } }); } } }, draw(ctx, e) { for (let i = 0; i < 12; i++) { const an = (i / 12) * TAU; const mx = x + Math.cos(an) * 120, my = y + Math.sin(an) * 80; ctx.fillStyle = 'rgba(200,240,255,0.55)'; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5; ctx.fillRect(mx - 9, my - 60, 18, 46); ctx.strokeRect(mx - 9, my - 60, 18, 46); } } });
+  }, { t: 'reac', n: 50 });
+  S('cho_boulet', 'Boulet Humain', 'choji', 'neutre', 8, 20, 70, ['Mobilité', 'Mêlée'], 'Tu gonfles et roules comme un boulet géant : tu rebondis sur les ennemis et les écrases.', (u, T, a, tg, m) => {
+    const hs = new Map(); let an = a; u.iframe = Math.max(u.iframe || 0, 1.2); ent({ life: 1.4 + m * 0.3, upd(e, dt) { u.x += Math.cos(an) * 600 * dt; u.y += Math.sin(an) * 600 * dt; for (const v of foes(u, u.x, u.y, 60)) if (!hs.has(v) || G.t - hs.get(v) > 0.4) { hs.set(v, G.t); hit(u, v, T, 1, { melee: 1, kb: 500, kbA: an }); an += Math.PI + rand(-0.5, 0.5); Cam.add(0.3); } if (G.map) { if (u.x < 60 || u.x > G.map.w - 60) an = Math.PI - an; if (u.y < 60 || u.y > G.map.h - 60) an = -an; } }, draw(ctx, e) { ctx.fillStyle = '#c86a3a'; ctx.strokeStyle = '#0d0a14'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(u.x, u.y - 34, 40, 0, TAU); ctx.fill(); ctx.stroke(); ctx.strokeStyle = 'rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.arc(u.x, u.y - 34, 30, e.t * 20, e.t * 20 + 2); ctx.stroke(); } });
+  }, { t: 'kills', n: 60 });
+  S('ten_armes', 'Dragons Jumeaux Ascendants', 'tenten', 'neutre', 12, 25, 18, ['Projectile', 'AoE'], 'Deux parchemins s’envolent en spirale et font pleuvoir des dizaines d’armes autour de la cible.', (u, T, a, tg, m) => {
+    const p = tpt(u, a, tg, 320); for (let i = 0; i < 16 + m * 6; i++) G.delayed.push({ t: 0.4 + i * 0.05, f: () => { const x = p.x + rand(-130, 130), y = p.y + rand(-80, 80); area(u, T, x, y, 34); FX.add({ type: 'spark', x, y, z: 60, vx: 0, vy: 0, vz: -600, c: '#c8d0dc', size: 4, life: 0.15 }); } }); ent({ life: 0.6, draw(ctx, e) { for (const s of [-1, 1]) { ctx.strokeStyle = '#d63c3c'; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(u.x + s * 20, u.y - 60 - e.t * 200, 16, e.t * 10, e.t * 10 + 4); ctx.stroke(); } } });
+  }, { t: 'wins', n: 9 });
+  S('ino_esprit', 'Transposition de l’Esprit', 'ino', 'illusion', 16, 30, 0, ['Contrôle'], 'Ton esprit prend le contrôle d’un ennemi pendant 4 s : il combat pour toi.', (u, T, a, tg, m) => {
+    const v = tg && alive(tg) ? tg : nearest(u, u.x, u.y, 500); if (!v) return; if (v.boss || v.isPlayer) { applyGen(u, v, 'confuse', 2 + m * 0.5); return; } applyGen(u, v, 'charm', 3 + m); FX.kanji(v.x, v.y, 100, '心', '#ff9ce6', 34, 1);
+  }, { t: 'reac', n: 45 });
+  S('kib_crocs', 'Crocs sur Crocs', 'kiba', 'vent', 7, 15, 40, ['Mobilité', 'Mêlée'], 'Toi et Akamaru devenez deux tornades perceuses qui ricochent entre les ennemis.', (u, T, a, tg, m) => {
+    for (let s = 0; s < 2; s++) { const hs = new Set(); let an = a + (s ? 0.25 : -0.25); ent({ x: u.x, y: u.y, life: 1.2 + m * 0.2, upd(e, dt) { e.x += Math.cos(an) * 750 * dt; e.y += Math.sin(an) * 750 * dt; const v = foes(u, e.x, e.y, 46).find((w) => !hs.has(w)); if (v) { hs.add(v); hit(u, v, T, 1, { melee: 1 }); const nx = nearest(u, e.x, e.y, 400); if (nx && !hs.has(nx)) an = Math.atan2(nx.y - e.y, nx.x - e.x); } }, draw(ctx, e) { ctx.strokeStyle = s ? '#f2f2f2' : '#8a7a6a'; ctx.lineWidth = 3; for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.ellipse(e.x, e.y - 24, 18 - i * 3, 26 - i * 4, 0, e.t * 30 + i, e.t * 30 + i + 3); ctx.stroke(); } } }); }
+  }, { t: 'kills', n: 40 });
+})();
+
+(function(){ const SE33 = window.SE33;
+  /* ---------- Entités : mise à jour, dessin, nettoyage ---------- */
+  const baseUP = updateProjs;
+  updateProjs = function (dt) {
+    const r = baseUP.apply(this, arguments);
+    const L = SE33.ents; for (let i = L.length - 1; i >= 0; i--) { const e = L[i]; e.t += dt; try { e.upd && e.upd(e, dt); } catch (x) { e.dead = 1; } if (e.dead || e.t >= e.life) L.splice(i, 1); }
+    return r;
+  };
+  const baseDZ = drawZones;
+  drawZones = function (ctx) { const r = baseDZ.apply(this, arguments); for (const e of SE33.ents) if (e.draw) { ctx.save(); try { e.draw(ctx, e); } catch (x) {} ctx.restore(); } return r; };
+  const baseRW = resetWorld;
+  resetWorld = function () { SE33.ents.length = 0; SE33.tsuku = null; return baseRW.apply(this, arguments); };
+  /* ---------- Maîtrise (3 niveaux) ---------- */
+  const ML = [0, 25, 80];
+  SE33.ML = ML;
+  const prof = () => { const p = P(); if (!p) return null; p.sec33 = p.sec33 || { un: {}, use: {}, st: { wins: 0, kills: 0, reac: 0, arena: {} } }; p.sec33.st.arena = p.sec33.st.arena || {}; return p.sec33; };
+  SE33.prof = prof;
+  const mlOf = (uses) => (uses >= ML[2] ? 3 : uses >= ML[1] ? 2 : 1);
+  SE33.mlOf = mlOf;
+  SE33.ml = (u, id) => { if (!u.isPlayer) return 2; const s = prof(); return s ? mlOf(s.use[id] || 0) : 1; };
+  /* ---------- Exécution ---------- */
+  const baseET = execTech;
+  execTech = function (u, T, a, tg) {
+    if (T && T.kind === 'sig33' && SE33.H[T.sig33]) {
+      const m = SE33.ml(u, T.id); const E = EL[T.el] || EL.neutre;
+      FX.kanji(u.x, u.y, 90, '秘', E.c, 22, 0.5); u.pose = 'cast'; u.poseT = 0;
+      try { SE33.H[T.sig33](u, T, a, tg, m); } catch (x) { console.warn('sig33', T.id, x); }
+      if (u.isPlayer) { const s = prof(); if (s) { const before = mlOf(s.use[T.id] || 0); s.use[T.id] = (s.use[T.id] || 0) + 1; const after = mlOf(s.use[T.id]); if (after > before) toast('Maîtrise ' + ['', 'I', 'II', 'III'][after], T.n, after === 3 ? 'Effet final débloqué : la technique change de forme.' : 'L’effet de la technique s’améliore.', '#ffd27a', '秘'); } SE33.ev.cast = (SE33.ev.cast || 0) + 1; SE33.ev['c_' + T.id] = 1; if (G.run) G.run.techUse[T.id] = (G.run.techUse[T.id] || 0) + 1; }
+      return;
+    }
+    return baseET.apply(this, arguments);
+  };
+  // Hidan, Lions, combos de moveset
+  const baseDD = dealDamage;
+  dealDamage = function (src, tgt, base, o = {}) {
+    if (src && src._lions > G.t && o.melee && tgt !== src) { o = Object.assign({}, o, { st: Object.assign({ seal: 1 }, o.st || {}) }); base *= 1.25; }
+    if (src && src.ms33fx && o.melee && !o.ms33 && SE33.MSFX && SE33.MSFX[src.ms33fx]) { try { SE33.MSFX[src.ms33fx](src, tgt, o); } catch (x) {} }
+    const r = baseDD.call(this, src, tgt, base, o);
+    const J = tgt && tgt._jashin; if (J && G.t < J.until && alive(J.v) && dist(tgt.x, tgt.y, J.x, J.y) < 90 && r > 0 && !o.jashin) { baseDD(tgt, J.v, r * 2, { el: 'neutre', noReact: 1, noMark: 1, jashin: 1 }); FX.text(J.v.x, J.v.y - 80, 'Malédiction !', '#ff3b3b', 14); }
+    return r;
+  };
+  // Gates : la vie fond
+  const baseUU = updateUnit;
+  updateUnit = function (u, dt) {
+    const r = baseUU.apply(this, arguments);
+    if (u._gates) { if (u.charging || !alive(u)) { u._gates = 0; u.buffs.gates = 0; } else { u.hp -= u.maxHp * 0.004 * u._gates * dt; u.buffs.gates = Math.max(u.buffs.gates || 0, 1); u.spd0 = u.spd0 || u.spd; if (Math.random() < dt * 10) FX.add({ type: 'glow', x: u.x + rand(-14, 14), y: u.y, z: rand(10, 60), vz: 120, c: u._gates >= 8 ? '#ff3b3b' : '#7dffb0', size: 10, life: 0.4 }); if (u.hp < 1) u.hp = 1; } }
+    return r;
+  };
+  // IA : utiliser les techniques secrètes/uniques
+  const baseBT = bestTech;
+  bestTech = function (u, tgt, d) {
+    const r = baseBT.apply(this, arguments);
+    if (!tgt) return r; const ids = (u.slots || []).filter((id) => id && TECH[id] && TECH[id].kind === 'sig33' && canCast(u, id));
+    if (ids.length && d < 560 && (!r || Math.random() < 0.55)) return { id: pick(ids), aim: null };
+    return r;
+  };
+  /* ---------- Tags ---------- */
+  const baseUT = usableTech;
+  usableTech = function (p, id, all) { const T = TECH[id]; if (T && T.s33) { const s = p.sec33; return !!(s && s.un && s.un[id]) || !!all; } return baseUT.apply(this, arguments); };
+  const CH = (c, i) => (c.t === 'arena' ? { t: 'kills', n: 20 + (i % 10) * 8 } : c.t === 'wins' ? { t: 'reac', n: c.n * 6 } : c);
+  SE33.LIST.forEach((e, i) => { e.ch = CH(e.ch || { t: 'kills', n: 30 }, i); });
+  function chText(c) { const st = prof().st; if (c.t === 'kills') return ['Éliminer ' + c.n + ' ennemis (' + st.kills + '/' + c.n + ')', Math.min(1, st.kills / c.n)]; return ['Déclencher ' + c.n + ' réactions (' + st.reac + '/' + c.n + ')', Math.min(1, st.reac / c.n)]; }
+  SE33.chText = chText;
+  function checkUnlocks(quiet) { const p = P(); const s = prof(); if (!p || !s) return; for (const e of SE33.LIST) { if (s.un[e.id] || !TECH[e.id]) continue; if (chText(e.ch)[1] >= 1) { s.un[e.id] = 1; grantTech(p, TECH[e.id]); Profile.dirty = true; if (!quiet) toast('Technique secrète débloquée', TECH[e.id].n, 'Équipe-la dans Préparation.', '#ffd27a', '秘'); } } }
+  SE33.checkUnlocks = checkUnlocks;
+  const prog = () => G.mode && G.mode !== 'creative' && G.mode !== 'demo' && G.mode !== 'pvp';
+  const baseKill = onUnitKilled; onUnitKilled = function (u, killer) { const r = baseKill.apply(this, arguments); try { if (killer && killer.isPlayer && u.team !== killer.team && prog()) { prof().st.kills++; if (prof().st.kills % 5 === 0) checkUnlocks(); } } catch (x) {} return r; };
+  const bd = discover; discover = function (kind) { try { if (kind === 'reac' && prog() && P()) { prof().st.reac++; checkUnlocks(); } } catch (x) {} return bd.apply(this, arguments); };
+  // Créatif : toutes disponibles ; libellé de sous-catégorie
+  for (const e of SE33.LIST) { const t = TECH[e.id]; if (t) { t.sub = t.sub || 'unique'; t.who33 = e.who; } }
+  const ut2 = usableTech; usableTech = function (p, id, all) { const T = TECH[id]; if (T && T.s33 && G.mode === 'creative') return true; return ut2.apply(this, arguments); };
+  // Guide
+  const bg = UI.tab_guide; if (bg) UI.tab_guide = function () { bg.apply(this, arguments); const g = $('#tabbody'); if (!g) return; const s = prof(); const d = document.createElement('div'); d.className = 'panel'; d.style.marginTop = '12px';
+    d.innerHTML = '<h3>Techniques secrètes (' + SE33.LIST.length + ')</h3>' + SE33.LIST.map((e) => { const T = TECH[e.id]; if (!T) return ''; const [tx] = chText(e.ch); return `<p><b>${s && s.un[e.id] ? '★' : '☆'} ${esc(T.n)}</b> <span class="muted">(${esc(e.who)})</span> — ${esc(T.desc)} <i class="muted">${tx}</i></p>`; }).join(''); g.appendChild(d); };
+  S2.note('s33', '#ffd27a', SE33.LIST.length + ' techniques secrètes canon', 'Deidara, Itachi, Gaara, Kakashi, Shikamaru, Hinata, Haku, Zabuza… chacune avec son effet propre et 3 niveaux de maîtrise. Débloquées en éliminant des ennemis ou en déclenchant des réactions ; toutes disponibles en Créatif.');
 })();
 /* Shinobi 2 — Constellations uniques par technique (port Éternel II v4.5, formes thématiques) */
 (function(){

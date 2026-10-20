@@ -9,3 +9,8 @@
 - 10 réactions triples, 5 quadruples, 1 quintuple (Six Voies) : 3 à 5 natures différentes sur une même cible en moins de 5 s. Elles complètent les réactions doubles et les zones existantes, sans doublon, et apparaissent dans le Codex.
 - 6 réactions dōjutsu liées aux pupilles existantes (Amaterasu, Tsukuyomi, 64 Points, Shinra Tensei, Kamui, Rinne).
 - 461 constellations uniques (une par technique, 0 doublon, 22 formes thématiques). Clic droit ou K sur une technique ; une branche s’allume par étoile de Maîtrise ; +2 % de dégâts par étoile.
+
+# Shinobi 2 — Mise à jour 8 : Bijū & Techniques secrètes
+- Les 9 bijū canon (Shukaku → Kurama) remplacent les bêtes, sauvegardes conservées. Le mode s’appelle désormais Mode Jinchūriki ; stades V1, V2, Transformation complète, Mode Chakra du Bijū.
+- Chaque bijū a 3 techniques canon (Cercueil de Sable, Mer de Flammes Bleues, Récif de Corail, Éruption, Geysers, Brume Corrosive, Essaim Lumineux, Tentacules, Rugissement Kyūbi…). Les orbes deviennent des Bijūdama.
+- 63 techniques secrètes canon (Deidara, Itachi, Gaara, Kakashi, Shikamaru, Hinata, Haku, Zabuza, Chōji, Ino, Tenten, Kiba…) : moteur d’effets propres, 3 niveaux de maîtrise, utilisées par l’IA. Déblocage par éliminations ou réactions ; toutes disponibles en Créatif ; liste complète dans le Guide.

@@ -14,6 +14,9 @@ Modes à stades (Bête + manteaux, pupilles solaire/lunaire/céleste/miroir/néa
 | Réactions triples/quadruples/quintuple + dōjutsu | porté v7.1, fusionné avec les doubles de la base | src/30_reactions.js |
 | Constellations uniques (461) | porté v7.1 | src/40_const.js |
 
+| 9 bijū canon (fusion avec BEASTS, kits canon, Bijūdama) | porté v8 | src/50_biju.js |
+| 63 techniques secrètes canon (moteur ext33) | porté v8 (défis d’Arène remplacés par éliminations/réactions) | src/51_secrets.js |
+
 ## Manquant → NON porté (prévu : l’utilisateur a validé les noms canon) (pour l’instant)
 | Système | Raison |
 |---|---|
