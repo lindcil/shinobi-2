@@ -44,7 +44,7 @@
 - **IA plus fine** : les ennemis rapprochent les distances en esquivant, punissent tes incantations (ruée suivie d'un coup), esquivent latéralement les projectiles, et ceux à distance frappent puis reculent.
 - **Plus simple** : XP ×5.
 - **Plus minimaliste** : environ moitié moins de texte à l'écran (seuls les boss parlent, textes inutiles supprimés, bannières courtes) et effets visuels allégés (35 à 50 % de particules en moins).
-## Mise à jour 14 — Edo Tensei, prédiction et nouvelles touches (20 octobre 2026)
+# Shinobi 2 — Mise à jour 14 : Edo Tensei, prédiction et nouvelles touches (20 octobre 2026)
 
 **Touches (AZERTY par défaut, codes physiques `event.code`)**
 
