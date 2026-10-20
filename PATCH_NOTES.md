@@ -25,3 +25,8 @@
 - Les ultimes Susanoo s’ajoutent aux stades 7–8 des Sharingan ; ceux de Naruto au Mode Chakra du Bijū.
 - Cinématique façon Bijūdama (assombrissement → impact → onde de choc), adoucie avec « Réduire les flashs ».
 - Non repris : sceaux/fusions et chocs QTE d’Éternel (Shinobi 2 a déjà les siens).
+
+# Shinobi 2 — Mise à jour 11 : Monde ouvert
+- Nouvel onglet « Monde » : la Terre du Feu, 7200 × 4500, six zones (Village caché de la Feuille, forêts, désert, mer, montagnes…), minicarte, cycle jour/nuit.
+- Maîtres canon (Kakashi, Tsunade, Jiraiya…) et 32 maîtres itinérants qui enseignent par des épreuves QTE : 17 modes appris (Mode Ermite Crapaud/Serpent/Bois, Byakugō, Huit Portes, Ōtsutsuki, Chakra de Bijū, Contrôle V2, Cinq Cœurs, Izanagi, Kaguya, Hiraishin, Ange de Papier, Samehada, Armure de Foudre, Armure de Sable, Iaidō). Ils s’intègrent au système de stades de Shinobi 2 comme une pupille équipable.
+- 30 événements du monde, PNJ amicaux ou hostiles avec routes et maisons, apprivoisement (G) et invocation (V) de créatures, contrats d’invocation, accessoires, boutiques.
