@@ -44,3 +44,33 @@
 - **IA plus fine** : les ennemis rapprochent les distances en esquivant, punissent tes incantations (ruée suivie d'un coup), esquivent latéralement les projectiles, et ceux à distance frappent puis reculent.
 - **Plus simple** : XP ×5.
 - **Plus minimaliste** : environ moitié moins de texte à l'écran (seuls les boss parlent, textes inutiles supprimés, bannières courtes) et effets visuels allégés (35 à 50 % de particules en moins).
+## Mise à jour 14 — Edo Tensei, prédiction et nouvelles touches (20 octobre 2026)
+
+**Touches (AZERTY par défaut, codes physiques `event.code`)**
+
+| Action | AZERTY (défaut) | QWERTY |
+|---|---|---|
+| Se déplacer | Flèches | W A S D |
+| Charge de mode (appui = meilleur mode / stade suivant, maintien = charge de chakra) | Z | Z |
+| Dōjutsu (appui = activer/couper, maintien = stade suivant) | X | X |
+| Shuriken inné / C + E = outil spécial | E | E |
+| Coup (M1) / Esquive (dash) / Charge | J / K ou Maj / C | J / K ou Maj / C |
+| Techniques 1–4 / Ultime | U I O P (ou 1–4) / Espace | U I O P / Espace |
+| Mode Jinchūriki / Roue | F / A | F / Q |
+| Edo Tensei / Changer de corps | T / R | T / R |
+| Prédiction de substitution | C + K | C + K |
+
+Tout se réaffecte dans **Options → Touches** (clic puis touche, échange automatique, préréglages AZERTY/QWERTY, réinitialisation).
+
+- **Modes** : les techniques normales sont remplacées ; les techniques du mode hors de la roue affichée se lancent au **double appui** (deux touches de technique ensemble, 6 combinaisons).
+- **Edo Tensei** (T) : les 4 Hokage (Hashirama, Tobirama, Hiruzen, Minato) ou 46 autres personnages de Naruto ; **50 % d’échec** (le corps tombe en poussière). Réussi : allié régénérant ; **R** pour en prendre le contrôle (retour automatique si le corps contrôlé tombe).
+- **Substitution = prédiction** : C + esquive ouvre une garde de 2 s ; touché pendant la garde = esquive. 3 charges, une charge revient toutes les 10 s. Esquiver après un coup ne permute plus.
+- **Esquives « Ultra Instinct »** : aucune esquive ne téléporte plus (substitution, esquive de l’IA). Le personnage reste sur place, se balance de côté (image rémanente, léger reflet argenté, sans flash), invulnérable, puis son coup suivant est un **contre +50 %**. Le dash ne change pas.
+- **Clans** : uniquement un ultime + un passif ; l’élément principal se choisit librement (Préparation).
+- **Listes de techniques** : de la plus rare à la plus commune, puis disponibles d’abord.
+- **Créatif** : sélecteur de techniques (recherche, type, élément, rareté, tri par rareté/nom/dégâts/coût/recharge, emplacement 1–4 ou ultime).
+- **Équiper le meilleur** (Équipement et Préparation) + équipement automatique au départ de mission (désactivable).
+- **Outils ninja** : nouvel onglet-boutique (shuriken explosif, Fūma géant, kunai à parchemin, senbon empoisonnés, bombe fumigène, kunai éclair).
+- **Rythme** : jeu 10 % plus lent, incantations ×1,3 avec temps de récupération après chaque technique, M1 un peu plus lent.
+- Bouton **« Retour au menu des jeux »** sur l’écran titre (lindcil.github.io).
+
