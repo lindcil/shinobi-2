@@ -13107,6 +13107,19 @@ for (const k of ['celeste', 'miroir', 'neant', 'solaire', 'lunaire', 'anneaux', 
 })();
 /* Shinobi 2 — rencontres du monde ouvert : toutes au même taux */
 (function () { try { if (window.SE35 && SE35.EVENTS) { for (const e of SE35.EVENTS) { e.w = 1; e.rare = false; } S2.note('enc', '#d63c3c', 'Rencontres au même taux', 'Toutes les rencontres du monde ouvert (Akatsuki, Minato, Momoshiki comprises) ont désormais la même probabilité.'); } } catch (e) {} })();
+/* Correctif : Préparation vide quand on possède des techniques de maîtres/personnages (sous-classes « unique » / « special » absentes). */
+(function () {
+  if (typeof SUBCLASS !== 'undefined') {
+    if (!SUBCLASS.unique) SUBCLASS.unique = { n: 'Signature', k: '極', c: '#ffd27a', d: 'Technique signature d’un personnage ou d’un maître.' };
+    if (!SUBCLASS.special) SUBCLASS.special = { n: 'Spéciale', k: '特', c: '#ff8ad8', d: 'Technique spéciale (mode, forme ou arme unique).' };
+    if (!SUBCLASS.misc) SUBCLASS.misc = { n: 'Divers', k: '雑', c: '#a69db8', d: 'Autres techniques.' };
+    if (typeof SUB_ORDER !== 'undefined') for (const k of ['unique', 'special']) if (!SUB_ORDER.includes(k)) SUB_ORDER.push(k);
+  }
+  const bts = techSub; techSub = function (T) { let s; try { s = bts.apply(this, arguments); } catch (e) { s = 'misc'; } return SUBCLASS[s] ? s : (SUBCLASS.misc ? 'misc' : Object.keys(SUBCLASS)[0]); };
+  // profils anciens : clan inconnu, bête équipée absente
+  const bh = UI.hubHeader; UI.hubHeader = function () { const p = P(); if (p && !CLANS[p.clan]) p.clan = Object.keys(CLANS)[0]; return bh.apply(this, arguments); };
+  if (typeof BEASTS !== 'undefined') { const bp = UI.tab_prep; UI.tab_prep = function () { const p = P(); if (p && p.beastEq && !BEASTS.some((b) => b.id === p.beastEq)) p.beastEq = null; return bp.apply(this, arguments); }; }
+})();
 /* Shinobi 2 — Constellations uniques par technique (port Éternel II v4.5, formes thématiques) */
 (function(){
   const hash = (s) => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
