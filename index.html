@@ -11145,6 +11145,197 @@ function techCard2(id, p, opts = {}) {
     pnl.appendChild(d); $('#orf2').onchange = (e) => { st.rf2 = e.target.value !== 'off'; Profile.save(); }; };
   S2.note('fx', '#9fd8ff', 'Réduction des flashs', 'Option activée par défaut : les flashs plein écran clairs sont plafonnés ; les grands moments (boss, orbe, ultimes) gardent une impact frame douce en lignes de vitesse.');
 })();
+/* Shinobi 2 — Réactions multi-éléments (triples, quadruples, quintuple) + réactions dōjutsu. Fusionné avec les doubles de la base (REACTIONS). */
+(function(){
+  const NORM = { feu:'feu', lave:'feu', noir:'feu', explosion:'feu', vent:'vent', eau:'eau', glace:'eau', vapeur:'eau', foudre:'foudre', tempete:'foudre', terre:'terre', bois:'terre' };
+  const near = (s, x, y, r) => G.units.filter((v) => alive(v) && !v.decoy && v.team !== (s ? s.team : 0) && v.team !== -1 && dist2(v.x, v.y, x, y) < r * r);
+  const pw = (s) => (s ? (s.atk || 1) * 34 : 30);
+  const D = (s, v, m, el, st) => dealDamage(s, v, pw(s) * m, { el, st, s2rx: 1, zone: 1 });
+  const RX = {}; const def = (id, n, k, c, mul, d, fx) => { RX[id] = { id, n, k, c, mul, d, fx }; REACTIONS[id] = { n, d, c }; return RX[id]; };
+  const Z = (t, x, y, r, dur, s) => { try { addZone(t, x, y, r, dur, s); } catch (e) {} };
+  const TRI = {
+    'eau|feu|vent': def('rx3_ouragan', 'Ouragan Bouillant', '颶', '#f0e8ff', 2.0, 'Eau, feu et vent : un ouragan de vapeur brûlante.', (s, t) => Z('steam', t.x, t.y, 150, 5, s)),
+    'feu|foudre|vent': def('rx3_plasma', 'Tempête de Plasma', '熾', '#ffcf5a', 2.2, 'Feu, foudre et vent : une tornade de plasma foudroie alentour.', (s, t) => near(s, t.x, t.y, 170).forEach((v) => D(s, v, 0.6, 'foudre', { shock: 0.5 }))),
+    'eau|foudre|vent': def('rx3_typhon', 'Typhon Électrique', '颱', '#58c9ff', 2.0, 'Eau, foudre et vent : un typhon chargé paralyse et trempe la zone.', (s, t) => Z('storm', t.x, t.y, 160, 6, s)),
+    'eau|feu|terre': def('rx3_obsidienne', 'Prison d’Obsidienne', '黒曜', '#7a5a9a', 1.9, 'Lave refroidie par l’eau : la cible est pétrifiée 2,5 s.', (s, t) => applyStatus(s, t, { root: 2.5 })),
+    'feu|terre|vent': def('rx3_cendres', 'Pluie de Cendres', '灰', '#8a7a7a', 1.8, 'Lave soufflée par le vent : cendres ardentes.', (s, t) => Z('ash', t.x, t.y, 150, 5, s)),
+    'feu|foudre|terre': def('rx3_volcan', 'Éruption Magnétique', '噴', '#ff5a2a', 2.1, 'La foudre aimante la roche en fusion : les ennemis sont regroupés puis l’éruption éclate.', (s, t) => near(s, t.x, t.y, 220).forEach((v) => { v.x += (t.x - v.x) * 0.5; v.y += (t.y - v.y) * 0.5; D(s, v, 0.5, 'lave', { heat: 30 }); })),
+    'eau|foudre|terre': def('rx3_marais', 'Marais Galvanique', '沼', '#7a9a5a', 1.8, 'Boue conductrice électrifiée : enlise et paralyse.', (s, t) => { Z('mud', t.x, t.y, 150, 6, s); Z('electric', t.x, t.y, 110, 3, s); }),
+    'eau|terre|vent': def('rx3_avalanche', 'Avalanche', '雪崩', '#cfefff', 1.9, 'Boue gelée emportée par le vent : gèle et repousse.', (s, t) => Z('ice', t.x, t.y, 160, 5, s)),
+    'eau|feu|foudre': def('rx3_chaudiere', 'Surcharge de Vapeur', '爆蒸', '#fff2c0', 2.2, 'Vapeur sous pression + foudre : explosion de chaudière.', (s, t) => near(s, t.x, t.y, 150).forEach((v) => D(s, v, 0.7, 'explosion', { knockup: 0.6 }))),
+    'foudre|terre|vent': def('rx3_fer', 'Tempête de Fer', '鉄', '#b7a3ff', 1.9, 'Sable magnétisé soulevé par le vent : éclats, saignement et paralysie.', (s, t) => applyStatus(s, t, { bleed: 2, shock: 0.4 })),
+  };
+  const QUAD = {
+    'eau|feu|foudre|vent': def('rx4_cataclysme', 'Cataclysme Céleste', '天災', '#ffe9a0', 2.8, 'Quatre éléments du ciel : orage, vapeur et flammes.', (s, t) => { Z('storm', t.x, t.y, 200, 5, s); Z('steam', t.x, t.y, 140, 4, s); }),
+    'feu|foudre|terre|vent': def('rx4_meteore', 'Météore Élémentaire', '隕', '#ff7a2b', 2.8, 'Un météore se forme au-dessus de la cible et s’écrase.', (s, t) => setTimeout(() => near(s, t.x, t.y, 200).forEach((v) => D(s, v, 1, 'explosion', { knockup: 0.8 })), 500)),
+    'eau|foudre|terre|vent': def('rx4_deluge', 'Déluge Tellurique', '洪', '#5aa8ff', 2.6, 'Inondation électrifiée : tout est enlisé et paralysé.', (s, t) => { Z('mud', t.x, t.y, 200, 6, s); near(s, t.x, t.y, 200).forEach((v) => applyStatus(s, v, { shock: 0.6, wet: 1 })); }),
+    'eau|feu|terre|vent': def('rx4_monde', 'Naissance d’un Monde', '創', '#7ad85a', 2.6, 'La terre se soulève, une forêt jaillit : racines, lave et vapeur.', (s, t) => { Z('roots', t.x, t.y, 170, 5, s); near(s, t.x, t.y, 170).forEach((v) => applyStatus(s, v, { root: 1.5 })); }),
+    'eau|feu|foudre|terre': def('rx4_noyau', 'Fusion du Noyau', '核', '#ff4a8a', 2.8, 'Réaction en chaîne : triple explosion au cœur de la cible.', (s, t) => [0, 250, 500].forEach((d) => setTimeout(() => alive(t) && D(s, t, 0.5, 'explosion'), d))),
+  };
+  const QUINT = def('rx5_rikudo', 'Six Voies : Création de Toute Chose', '六道', '#ffffff', 3.5, 'Les cinq natures sur une même cible : dégâts colossaux et tous les états.', (s, t) => { applyStatus(s, t, { heat: 30, wet: 1, shock: 0.6, bleed: 2, slow: 2 }); G.flashA = 0.6; G.flashC = '#ffffff'; });
+  // Dōjutsu × statut (fusion avec les pupilles de la base, noms canon)
+  const eyeOf = (s) => (s && ((s.mode && MODES[s.mode.id] && MODES[s.mode.id].kind === 'eye' && s.mode.id) || (s.eyeOn && s.eye))) || null;
+  const DJ = [
+    ['solaire', (t, el) => t.st.bleed > 0 && el === 'vent', def('rx_ama_vent', 'Tornade d’Amaterasu', '黒嵐', '#2a0a3a', 1.9, 'Œil Solaire (Sharingan) : du vent sur une cible qui saigne propage des flammes noires.', (s, t) => near(s, t.x, t.y, 140).forEach((v) => applyStatus(s, v, { black: 2 })))],
+    ['lunaire', (t) => t.st.trance > 0, def('rx_tsukuyomi', 'Tsukuyomi en Miroir', '写幻', '#ff3b3b', 1.7, 'Œil Lunaire (Sharingan) : frapper une cible en transe étend la transe aux ennemis proches.', (s, t) => near(s, t.x, t.y, 160).forEach((v) => applyStatus(s, v, { trance: 1.2 })))],
+    ['celeste', (t) => t.st.seal > 0, def('rx_byak_jyuken', 'Sceau des 64 Points', '点穴', '#7ff0ff', 1.6, 'Œil Céleste (Byakugan) : une cible déjà scellée perd son chakra.', (s, t) => { t.ch = Math.max(0, (t.ch || 0) - 30); })],
+    ['neant', (t) => t.st.knockup > 0 || (t.z || 0) > 10, def('rx_rin_grav', 'Shinra Tensei : Écrasement', '天圧', '#b7a3ff', 1.9, 'Œil du Néant (Rinnegan) : une cible en l’air est plaquée au sol.', (s, t) => { t.z = 0; applyStatus(s, t, { slow: 2 }); })],
+    ['miroir', (t) => t.st.shock > 0, def('rx_kamui_ex', 'Distorsion de Kamui', '神爆', '#5ad8ff', 1.8, 'Œil du Miroir (Mangekyō) : une cible paralysée est aspirée puis recrachée.', (s, t) => { t.x += (s.x < t.x ? 1 : -1) * 120; })],
+    ['anneaux', (t) => t.st.slow > 0, def('rx_rinne', 'Rinne : Six Chemins', '輪廻', '#c9b8ff', 2.0, 'Œil aux Anneaux (Rinne-Sharingan) : une cible ralentie est enchaînée par les six chemins.', (s, t) => applyStatus(s, t, { root: 1.8 }))],
+  ];
+  const fire = (s, t, R) => {
+    const now = G.t; t._s2rxCd = t._s2rxCd || {}; if (t._s2rxCd[R.id] > now) return; t._s2rxCd[R.id] = now + 3;
+    S2.ev[R.id] = (S2.ev[R.id] || 0) + 1; S2.lastRx = R.id;
+    D(s, t, R.mul, 'neutre'); try { R.fx(s, t); } catch (e) { console.warn('s2rx', R.id, e.message); }
+    FX.kanji(t.x, t.y, 120, R.k, R.c, 44, 1.1); FX.ring(t.x, t.y, R.c, 10, 140, 0.45, 6); FX.text(t.x, t.y - 92, R.n, R.c, 17);
+    Cam.add(0.4 + R.mul * 0.1); G.hitStop = Math.max(G.hitStop, 0.05); discover('reac', R.id, s);
+  };
+  const base = dealDamage;
+  dealDamage = function (src, tgt, b, o = {}) {
+    const pre = []; try { const e = !o.s2rx && src && tgt && tgt.st && eyeOf(src); if (e) for (const [k, ok, R] of DJ) if (k === e && ok(tgt, o.el)) pre.push(R); } catch (e) {}
+    const r = base.apply(this, arguments);
+    try {
+      if (o.s2rx || !src || !tgt || tgt.dead || !tgt.st) return r;
+      const n = NORM[o.el]; if (n) { const m = (tgt._s2m = tgt._s2m || {}); m[n] = G.t; const set = Object.keys(m).filter((k) => G.t - m[k] < 5).sort(), key = set.join('|');
+        const R = set.length >= 5 ? QUINT : set.length === 4 ? QUAD[key] : set.length === 3 ? TRI[key] : null;
+        if (R) fire(src, tgt, R); }
+      for (const R of pre) fire(src, tgt, R);
+    } catch (e) { console.warn('s2rx', e.message); }
+    return r;
+  };
+  S2.rx = { RX, TRI, QUAD, QUINT, DJ, fire };
+  // Guide
+  const bg = UI.tab_guide; if (bg) UI.tab_guide = function () { bg.apply(this, arguments); const g = $('#tabbody'); if (!g) return; const d = document.createElement('div'); d.className = 'panel'; d.style.marginTop = '12px';
+    d.innerHTML = '<h3>Réactions multi-éléments et dōjutsu</h3><p class="muted">Touchez une même cible avec 3, 4 ou 5 natures différentes en moins de 5 s.</p>' + Object.values(RX).map((R) => `<p><b style="color:${R.c}">${R.k} ${R.n}</b> — ${R.d}</p>`).join(''); g.appendChild(d); };
+  S2.note('rx', '#ffc23d', 'Réactions triples, quadruples et quintuple', '10 triples, 5 quadruples, 1 quintuple (Six Voies), plus 6 réactions dōjutsu liées aux pupilles. Elles complètent les réactions doubles existantes.');
+})();
+/* Shinobi 2 — Constellations uniques par technique (port Éternel II v4.5, formes thématiques) */
+(function(){
+  const hash = (s) => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+  const mkR = (seed) => () => { seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  const T2 = Math.PI * 2, L = (a, b, k) => a + (b - a) * k;
+  /* =================== 1. Formes de constellation (une par thème, paramétrées par technique) =================== */
+  const poly = (f, n, a, b) => { const o = []; for (let i = 0; i <= n; i++) o.push(f(L(a, b, i / n))); return o; };
+  const SH = {
+    spiral(n, R) { const turns = 1.5 + R() * 0.9, ph = R() * T2, pw = 0.8 + R() * 0.25; const pts = [[0, 0]], par = [-1];
+      for (let i = 1; i < n; i++) { const k = i / (n - 1), th = ph + k * turns * T2; pts.push([Math.cos(th) * 3.4 * Math.pow(k, pw), Math.sin(th) * 3.4 * Math.pow(k, pw)]); par.push(i % 4 === 3 && i > 2 ? i - 2 : i - 1); }
+      return { pts, par, deco: [poly((k) => [Math.cos(ph + k * turns * T2) * 3.4 * Math.pow(k, pw), Math.sin(ph + k * turns * T2) * 3.4 * Math.pow(k, pw)], 90, 0, 1)] }; },
+    fork(n, R) { const m = Math.ceil(n * 0.55), pts = [[0, -3.2]], par = [-1], trunk = [[0, -3.2]]; let x = 0;
+      for (let i = 1; i < m; i++) { x = (i % 2 ? 1 : -1) * (0.5 + R() * 0.9); pts.push([x, -3.2 + i * (6.2 / m)]); par.push(i - 1); trunk.push(pts[i]); }
+      const deco = [trunk]; for (let i = m; i < n; i++) { const j = 1 + ((i - m) % (m - 1)), b = pts[j], sd = b[0] > 0 ? 1 : -1, ln = 1.4 + R() * 1.2; pts.push([b[0] + sd * ln, b[1] + 0.4 + R() * 0.8]); par.push(j); deco.push([b, pts[i]]); }
+      return { pts, par, deco }; },
+    flame(n, R) { const k = 3 + Math.floor(R() * 2), pts = [[0, 3]], par = [-1], last = [], H = [], deco = [];
+      for (let j = 0; j < k; j++) { last.push(0); H.push(0.8 + R() * 0.5); deco.push([[0, 3]]); }
+      for (let i = 1; i < n; i++) { const j = (i - 1) % k, l = Math.floor((i - 1) / k) + 1, bx = (j - (k - 1) / 2) * 1.5; const p = [bx * (1 - l * 0.18) + Math.sin(l * 1.3 + j) * 0.45, 3 - l * 1.55 * H[j]]; pts.push(p); par.push(last[j]); last[j] = i; deco[j].push(p); }
+      deco.forEach((d) => { const t = d[d.length - 1]; d.push([t[0] * 0.8 + 0.3, t[1] - 0.9]); }); return { pts, par, deco }; },
+    ribcage(n, R) { const s = Math.ceil(n / 3), pts = [[0, -3.1]], par = [-1], spine = [[0, -3.1]], deco = [], rib = {}; const w = 1.7 + R() * 0.5;
+      for (let i = 1; i < s; i++) { pts.push([0, -3.1 + i * (5.6 / s)]); par.push(i - 1); spine.push(pts[i]); } deco.push(spine);
+      for (let i = s; i < n; i++) { const q = i - s, j = 1 + (Math.floor(q / 2) % (s - 1)), sd = q % 2 ? 1 : -1, key = j * 2 + (sd > 0 ? 1 : 0), lv = rib[key] = (rib[key] || 0) + 1; const b = pts[j];
+        pts.push([sd * (w * lv * 0.85 + 0.2), b[1] + 0.35 * lv - 0.2]); par.push(lv > 1 ? pts.length - 3 : j); deco.push([b, [sd * w * 0.6, b[1] - 0.35], pts[i]]); }
+      return { pts, par, deco }; },
+    wave(n, R) { const ph = R() * T2, A = 1.2 + R() * 0.6, fr = 1 + R() * 0.5, m = Math.ceil(n * 0.7), pts = [], par = [], deco = [];
+      for (let i = 0; i < m; i++) { const x = -3.9 + (7.8 * i) / (m - 1); pts.push([x, Math.sin(x * fr + ph) * A]); par.push(i - 1); }
+      deco.push(poly((x) => [x, Math.sin(x * fr + ph) * A], 80, -3.9, 3.9)); for (let i = m; i < n; i++) { const j = 1 + ((i - m) * 2) % (m - 1), b = pts[j]; pts.push([b[0] + 0.5, b[1] - 1.5 - R() * 0.5]); par.push(j); deco.push([b, [b[0] + 0.7, b[1] - 1.1], pts[i]]); }
+      return { pts, par, deco }; },
+    tornado(n, R) { const tw = 1.8 + R() * 0.8, pts = [], par = []; for (let i = 0; i < n; i++) { const k = i / (n - 1); pts.push([Math.cos(i * tw) * (0.3 + k * 3.6), 3 - k * 6.2]); par.push(i - 1); }
+      const deco = []; for (let k = 0; k <= 1.001; k += 0.2) deco.push(poly((a) => [Math.cos(a) * (0.3 + k * 3.6), 3 - k * 6.2 + Math.sin(a) * 0.25], 30, 0, T2)); return { pts, par, deco }; },
+    ring(n, R) { const r1 = 2.7 + R() * 0.4, inner = Math.floor(n * 0.3), pts = [[0, 0]], par = [-1], ph = R() * T2;
+      for (let i = 1; i < n; i++) { const isIn = i <= inner, k = isIn ? (i - 1) / inner : (i - 1 - inner) / (n - 1 - inner); const rr = isIn ? r1 * 0.5 : r1; pts.push([Math.cos(ph + k * T2) * rr, Math.sin(ph + k * T2) * rr]); par.push(i === 1 || i === inner + 1 ? (i === 1 ? 0 : 1) : i - 1); }
+      return { pts, par, deco: [poly((a) => [Math.cos(a) * r1, Math.sin(a) * r1], 60, 0, T2), poly((a) => [Math.cos(a) * r1 * 0.5, Math.sin(a) * r1 * 0.5], 40, 0, T2)] }; },
+    burst(n, R, k0) { const k = k0 || 5 + Math.floor(R() * 3), ph = R() * T2, pts = [[0, 0]], par = [-1], last = Array(k).fill(0), deco = [];
+      for (let i = 1; i < n; i++) { const j = (i - 1) % k, l = Math.floor((i - 1) / k) + 1, a = ph + (j / k) * T2 + (k0 ? 0 : l * 0.12); pts.push([Math.cos(a) * (0.5 + l * 1.25), Math.sin(a) * (0.5 + l * 1.25)]); par.push(last[j]); last[j] = i; }
+      for (let j = 0; j < k; j++) { const a = ph + (j / k) * T2; deco.push([[0, 0], [Math.cos(a) * 3.6, Math.sin(a) * 3.6]]); } return { pts, par, deco }; },
+    hexa(n, R) { const o = SH.burst(n, R, 6); o.deco.push(poly((a) => [Math.cos(Math.round(a / (T2 / 6)) * (T2 / 6)) * 3, Math.sin(Math.round(a / (T2 / 6)) * (T2 / 6)) * 3], 6, 0, T2)); o.pts = o.pts.map((p, i) => (i > 6 && i % 2 ? [p[0] + 0.5, p[1] - 0.5] : p)); return o; },
+    mountain(n, R) { const pts = [[0, 2.8]], par = [-1], ridge = []; let lastL = 0, lastR = 0;
+      for (let i = 1; i < n; i++) { const sd = i % 2 ? 1 : -1, l = Math.ceil(i / 2), x = sd * l * (7.6 / n) * 1.0, y = (l % 2 ? -2.6 - R() * 0.6 : -0.6 - R() * 0.6) + l * 0.25; pts.push([x, y]); par.push(sd > 0 ? lastR : lastL); if (sd > 0) lastR = i; else lastL = i; }
+      const srt = pts.slice(1).sort((a, b) => a[0] - b[0]); return { pts, par, deco: [[[-4, 3], ...srt, [4, 3]]] }; },
+    roots(n, R) { const pts = [[0, 3]], par = [-1], deco = []; for (let i = 1; i < n; i++) { const d = Math.floor(Math.log2(i + 1)), idx = i + 1 - (1 << d), w = 1 << d; pts.push([((idx + 0.5) / w - 0.5) * (2.6 + d * 1.6) + (R() - 0.5) * 0.4, 3 - d * 1.75]); par.push(Math.floor((i - 1) / 2)); }
+      deco.push([[0, 3.4], [0, 1.3]], poly((a) => [Math.cos(a) * 3.4, -1.4 + Math.sin(a) * 2], 50, Math.PI * 1.05, Math.PI * 1.95)); return { pts, par, deco }; },
+    crescent(n, R) { const a0 = -2.1 - R() * 0.4, a1 = 2.1 + R() * 0.4, m = Math.ceil(n * 0.65), pts = [], par = [], c = R() * 0.6;
+      for (let i = 0; i < m; i++) { const a = L(a0, a1, i / (m - 1)); pts.push([Math.cos(a) * 3.2 - 0.6, Math.sin(a) * 3.1]); par.push(i - 1); }
+      for (let i = m; i < n; i++) { const j = Math.min(m - 1, 1 + (i - m) * 2), a = L(a0, a1, j / (m - 1)); pts.push([Math.cos(a) * (1.9 + c) + 0.2, Math.sin(a) * 1.9]); par.push(j); }
+      return { pts, par, deco: [poly((a) => [Math.cos(a) * 3.2 - 0.6, Math.sin(a) * 3.1], 50, a0, a1), poly((a) => [Math.cos(a) * (1.9 + c) + 0.2, Math.sin(a) * 1.9], 50, a0 + 0.3, a1 - 0.3)] }; },
+    tomoe(n, R) { const pts = [[0, 0]], par = [-1], deco = [], ph = R() * T2, curl = 0.8 + R() * 0.5; const per = Math.max(2, Math.floor((n - 1) * 0.5 / 3));
+      for (let j = 0; j < 3; j++) { const a = ph + (j * T2) / 3; let prev = 0; const tail = []; for (let l = 0; l < per; l++) { const aa = a + l * curl * 0.5, rr = 1.6 + l * 0.45; pts.push([Math.cos(aa) * rr * 1.2, Math.sin(aa) * rr]); par.push(prev); prev = pts.length - 1; tail.push(pts[prev]); } deco.push(tail); }
+      const rest = n - pts.length; for (let i = 0; i < rest; i++) { const a = ph + (i / rest) * T2 + 0.4; pts.push([Math.cos(a) * 3.8, Math.sin(a) * 3.0]); par.push(i ? pts.length - 2 : 1); }
+      deco.push(poly((a) => [Math.cos(a) * 3.8, Math.sin(a) * 3.0], 60, 0, T2)); return { pts, par, deco }; },
+    hourglass(n, R) { const pts = [[0, 0]], par = [-1], w = 3 + R() * 0.6; let up = 0, dn = 0;
+      for (let i = 1; i < n; i++) { const top = i % 2, l = Math.ceil(i / 2), row = Math.ceil(l / 2), sd = l % 2 ? -1 : 1, y = (top ? -1 : 1) * row * 1.05; pts.push([sd * (row * (w / 3.2) * 0.9) * (0.6 + R() * 0.3), y]); par.push(top ? up : dn); if (top) up = i; else dn = i; }
+      return { pts, par, deco: [[[-w, -3.2], [w, -3.2], [0, 0], [w, 3.2], [-w, 3.2], [0, 0], [-w, -3.2]]] }; },
+    helix(n, R) { const ph = R() * T2, A = 1.3 + R() * 0.5, pts = [], par = []; for (let i = 0; i < n; i++) { const x = -3.8 + (7.4 * i) / (n - 1), s = i % 2 ? 1 : -1; pts.push([x, Math.sin(x * 1.3 + ph) * A * s * 0.9 + (i === n - 1 ? -0.6 : 0)]); par.push(i - 1); }
+      return { pts, par, deco: [poly((x) => [x, Math.sin(x * 1.3 + ph) * A], 80, -3.9, 3.9), poly((x) => [x, -Math.sin(x * 1.3 + ph) * A], 80, -3.9, 3.9)] }; },
+    shuriken(n, R) { const b = 4, ph = R() * T2, pts = [[0, 0]], par = [-1], last = [0, 0, 0, 0], deco = [], cv = 0.35 + R() * 0.3;
+      for (let i = 1; i < n; i++) { const j = (i - 1) % b, l = Math.floor((i - 1) / b) + 1, a = ph + (j * T2) / b + l * cv; pts.push([Math.cos(a) * l * 1.2, Math.sin(a) * l * 1.2]); par.push(last[j]); last[j] = i; }
+      for (let j = 0; j < b; j++) deco.push(poly((k) => { const a = ph + (j * T2) / b + k * 3 * cv; return [Math.cos(a) * k * 3.6, Math.sin(a) * k * 3.6]; }, 20, 0, 1)); return { pts, par, deco }; },
+    lotus(n, R) { const k = 5, ph = -Math.PI / 2 + (R() - 0.5) * 0.4, pts = [[0, 0.6]], par = [-1], last = Array(k).fill(0), deco = [];
+      for (let i = 1; i < n; i++) { const j = (i - 1) % k, l = Math.floor((i - 1) / k) + 1, a = ph + (j - 2) * 0.62; pts.push([Math.cos(a) * l * 1.35 + (l > 1 ? (j - 2) * 0.25 : 0), 0.6 + Math.sin(a) * l * 1.35]); par.push(last[j]); last[j] = i; }
+      for (let j = 0; j < k; j++) { const a = ph + (j - 2) * 0.62; deco.push(poly((t) => [Math.cos(a) * 2 * (1 - Math.cos(t)) + -Math.sin(a) * Math.sin(t) * 0.7, 0.6 + Math.sin(a) * 2 * (1 - Math.cos(t)) + Math.cos(a) * Math.sin(t) * 0.7], 24, 0, T2)); }
+      return { pts, par, deco }; },
+    meteor(n, R) { const m = Math.ceil(n * 0.45), cx = 1.8, cy = -1.3, pts = [[cx, cy]], par = [-1];
+      for (let i = 1; i < m; i++) { const a = (i / (m - 1)) * T2; pts.push([cx + Math.cos(a) * 1.6, cy + Math.sin(a) * 1.6]); par.push(i === 1 ? 0 : i - 1); }
+      for (let i = m; i < n; i++) { const k = (i - m + 1) / (n - m); pts.push([cx - 1.6 - k * 4, cy + 1.6 + k * 2.6 + (i % 2 ? 0.5 : -0.4) * R()]); par.push(i === m ? 0 : i - 1); }
+      return { pts, par, deco: [poly((a) => [cx + Math.cos(a) * 1.6, cy + Math.sin(a) * 1.6], 40, 0, T2), [[cx - 1.2, cy + 1.2], [-4, 3]], [[cx - 0.4, cy + 1.6], [-3.4, 3.3]], [[cx - 1.6, cy + 0.4], [-4.2, 2.4]]] }; },
+    wings(n, R) { const pts = [[0, 0.4]], par = [-1], lift = 0.6 + R() * 0.5; let lw = 0, rw = 0;
+      for (let i = 1; i < n; i++) { const sd = i % 2 ? 1 : -1, l = Math.ceil(i / 2), x = sd * l * (8 / n), y = 0.4 - Math.sin((l / (n / 2)) * Math.PI * 0.9) * 2.6 * lift - (l % 2 ? 0 : -0.5); pts.push([x, y]); par.push(sd > 0 ? rw : lw); if (sd > 0) rw = i; else lw = i; }
+      return { pts, par, deco: [poly((x) => [x, 0.4 - Math.sin((Math.abs(x) / 4) * Math.PI * 0.9) * 2.6 * lift], 60, -4, 4), [[-0.6, 0.6], [0, 3], [0.6, 0.6]]] }; },
+    tails(n, R) { const k = 3 + Math.floor(R() * 3), pts = [[0, 2.6]], par = [-1], last = Array(k).fill(0), deco = [];
+      for (let i = 1; i < n; i++) { const j = (i - 1) % k, l = Math.floor((i - 1) / k) + 1, a = -Math.PI / 2 + (j - (k - 1) / 2) * 0.55, cu = l * 0.22 * (j - (k - 1) / 2 >= 0 ? 1 : -1); pts.push([Math.cos(a + cu) * l * 1.5, 2.6 + Math.sin(a + cu) * l * 1.5]); par.push(last[j]); last[j] = i; }
+      for (let j = 0; j < k; j++) { const a = -Math.PI / 2 + (j - (k - 1) / 2) * 0.55, sg = j - (k - 1) / 2 >= 0 ? 1 : -1; deco.push(poly((l) => [Math.cos(a + l * 0.22 * sg) * l * 1.5, 2.6 + Math.sin(a + l * 0.22 * sg) * l * 1.5], 20, 0, 3.6)); }
+      return { pts, par, deco }; },
+    cloud(n, R) { const C = [[-2.2, 0.6, 1.3], [0, -0.8, 1.6], [2.2, 0.5, 1.3], [0.4, 1.6, 1.1]].map((c) => [c[0] + (R() - 0.5) * 0.5, c[1] + (R() - 0.5) * 0.5, c[2]]), pts = [[C[1][0], C[1][1]]], par = [-1];
+      for (let i = 1; i < n; i++) { const c = C[i % 4], a = i * 2.4; pts.push([c[0] + Math.cos(a) * c[2], c[1] + Math.sin(a) * c[2]]); par.push(i < 4 ? 0 : i - 4); }
+      return { pts, par, deco: C.map((c) => poly((a) => [c[0] + Math.cos(a) * c[2] * 1.15, c[1] + Math.sin(a) * c[2] * 1.15], 30, 0, T2)) }; },
+    arrow(n, R) { const m = Math.ceil(n * 0.5), pts = [[-3.6, 0]], par = [-1], hd = 1.6 + R() * 0.5;
+      for (let i = 1; i < m; i++) { pts.push([-3.6 + (i * 6.4) / (m - 1), 0]); par.push(i - 1); }
+      for (let i = m; i < n; i++) { const q = i - m, head = q < 4, sd = q % 2 ? 1 : -1, l = Math.floor(q / 2) % 2 + 1; pts.push(head ? [2.8 - l * hd * 0.6, sd * l * hd * 0.6] : [-3.6 + l * 0.7, sd * l * 0.9]); par.push(head ? (l > 1 ? pts.length - 3 : m - 1) : 0); }
+      return { pts, par, deco: [[[-3.9, 0], [3.4, 0]], [[3.4, 0], [3.4 - hd * 1.3, -hd * 1.2]], [[3.4, 0], [3.4 - hd * 1.3, hd * 1.2]], [[-3.4, 0], [-2.4, -1.8]], [[-3.4, 0], [-2.4, 1.8]]] }; },
+    chain(n, R) { const pts = [], par = [], A = 0.7 + R() * 0.4; for (let i = 0; i < n; i++) { pts.push([-3.9 + (7.8 * i) / (n - 1), (i % 2 ? A : -A) + (i % 3 === 0 ? 0.6 : 0)]); par.push(i - 1); }
+      return { pts, par, deco: pts.slice(0, -1).map((p, i) => poly((a) => [(p[0] + pts[i + 1][0]) / 2 + Math.cos(a) * 0.6, (p[1] + pts[i + 1][1]) / 2 + Math.sin(a) * 0.35], 16, 0, T2)) }; },
+    grid(n, R) { const pts = [[0, -2.8]], par = [-1]; let row = 1, col = 0; for (let i = 1; i < n; i++) { const w = row + 1; pts.push([(col - (w - 1) / 2) * (1.7 - row * 0.12), -2.8 + row * 1.5]); par.push(row === 1 ? 0 : pts.length - 1 - row); col++; if (col >= w) { row++; col = 0; } }
+      return { pts, par, deco: pts.slice(1).map((p) => poly((a) => [p[0] + Math.cos(a) * 0.35, p[1] - 0.4 + Math.sin(a) * 0.35], 12, 0, T2)) }; },
+  };
+  const FAMFR = { spiral: 'Spirale', fork: 'Éclair fourchu', flame: 'Flamme', ribcage: 'Cage thoracique du Susanoo', wave: 'Vague', tornado: 'Tornade', ring: 'Onde circulaire', burst: 'Explosion', hexa: 'Cristal', mountain: 'Montagne', roots: 'Arbre et racines', crescent: 'Croissant', tomoe: 'Œil à tomoe', hourglass: 'Sablier', helix: 'Dragon', shuriken: 'Shuriken', lotus: 'Lotus', meteor: 'Météore', wings: 'Ailes', tails: 'Queues de Bijū', cloud: 'Nuage', arrow: 'Flèche', chain: 'Chaîne' , grid: 'Armée de clones' };
+  const MAP = [[/shuriken|kunai|outil/, 'shuriken'], [/spirale|rasen|orbe/, 'spiral'], [/chaine|fuin|sceau/, 'chain'], [/eclair|foudre|chidori|raikiri/, 'fork'], [/dragon/, 'helix'], [/flamme|feu|katon/, 'flame'],
+    [/vague|eau/, 'wave'], [/tornade|vent|kamui/, 'tornado'], [/onde|repousse|shinra|kaiten/, 'ring'], [/meteore|grav/, 'meteor'], [/corbeau|oiseau|phenix|aile/, 'wings'], [/lave|explos/, 'burst'],
+    [/fumee|cendre|brume/, 'cloud'], [/mur|terre|roc/, 'mountain'], [/bois|arbre|racine/, 'roots'], [/lame|ken|sabre/, 'crescent'], [/regard|gen|illusion|eye_/, 'tomoe'], [/sable/, 'hourglass'], [/glace|cristal/, 'hexa'],
+    [/tai|poing|lotus|coup/, 'lotus'], [/bete|biju|invoc|summon/, 'tails'], [/clone/, 'grid'], [/fleche|arc/, 'arrow'], [/armure|susano/, 'ribcage']];
+  const ELFAM = { feu: 'flame', foudre: 'fork', vent: 'tornado', eau: 'wave', terre: 'mountain', glace: 'hexa', bois: 'roots', lave: 'burst', noir: 'flame', gravite: 'meteor', illusion: 'tomoe', tempete: 'cloud', explosion: 'burst', vapeur: 'cloud', ombre: 'crescent', neutre: 'lotus' };
+  const FAMS = Object.keys(SH);
+  const STARW = ['Cœur', 'Élan', 'Ampleur', 'Cadence', 'Affinité', 'Écho', 'Éclat', 'Zénith', 'Densité', 'Sillage', 'Reflux', 'Apogée', 'Rythme', 'Vérité'];
+  const C = (S2.cst = { trees: {}, fam: {} });
+  function build() {
+    const sigs = new Set();
+    for (const id of Object.keys(TECH)) { const T = TECH[id]; let fam = null; const key = (id + ' ' + (T.n || '')).toLowerCase();
+      for (const [re, f] of MAP) if (re.test(key)) { fam = f; break; } fam = fam || ELFAM[T.el] || FAMS[hash(id) % FAMS.length];
+      let salt = 0, sh, sig; do { const R = mkR(hash(id + '#' + salt)); const n = 9 + (hash(id + salt) % 6); sh = SH[fam](n, R); sig = sh.pts.map((p) => p[0].toFixed(2) + ',' + p[1].toFixed(2)).join(';'); salt++; } while (sigs.has(sig) && salt < 20);
+      sigs.add(sig); C.fam[id] = fam;
+      C.trees[id] = { id, fam, sh, sig, stars: sh.pts.map((p, i) => ({ n: i ? STARW[(hash(id) + i) % STARW.length] + ' ' + (i + 1) : (T.n || id), b: i ? 0.02 : 0.03 })) };
+    }
+  }
+  build();
+  C.verify = () => { const s = new Set(); let dup = 0; for (const k in C.trees) { if (s.has(C.trees[k].sig)) dup++; s.add(C.trees[k].sig); } return { n: Object.keys(C.trees).length, dup, fams: new Set(Object.values(C.fam)).size }; };
+  const lit = (id) => { const p = P(); const lv = masteryLv((p && p.mast && p.mast[id]) || 0); const t = C.trees[id]; return t ? Math.min(t.stars.length, 1 + lv * Math.ceil(t.stars.length / 5)) : 0; };
+  C.lit = lit;
+  // bonus : +2 % de dégâts par étoile allumée sur la technique
+  const bd = dealDamage; dealDamage = function (src, tgt, b, o = {}) { if (src && src.isPlayer && o.tech && C.trees[o.tech] && !o.s2c) { const n = lit(o.tech); if (n > 1) arguments[2] = b * (1 + 0.02 * (n - 1)); } return bd.apply(this, arguments); };
+  function draw(cv, id) { const t = C.trees[id]; const c = cv.getContext('2d'); const W = cv.width, H = cv.height, s = Math.min(W, H) / 9.5; const T = TECH[id]; const col = (EL[T.el] || EL.neutre).c; const n = lit(id);
+    c.fillStyle = '#070a14'; c.fillRect(0, 0, W, H); for (let i = 0; i < 90; i++) { const r = mkR(hash(id) + i); c.fillStyle = 'rgba(255,255,255,' + r() * 0.4 + ')'; c.fillRect(r() * W, r() * H, 1.3, 1.3); }
+    const X = (p) => [W / 2 + p[0] * s, H / 2 + p[1] * s]; c.save(); c.globalAlpha = 0.22; c.strokeStyle = col; c.lineWidth = 1.2;
+    for (const d of t.sh.deco || []) { c.beginPath(); d.forEach((p, i) => { const q = X(p); i ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1]); }); c.stroke(); } c.restore();
+    t.sh.pts.forEach((p, i) => { const pa = t.sh.par[i]; if (pa >= 0) { const a = X(t.sh.pts[pa]), b = X(p); c.strokeStyle = i < n ? col : 'rgba(160,170,200,.3)'; c.lineWidth = i < n ? 2.2 : 1; c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke(); } });
+    t.sh.pts.forEach((p, i) => { const q = X(p); c.fillStyle = i < n ? '#fff' : '#56607a'; c.shadowColor = col; c.shadowBlur = i < n ? 12 : 0; c.beginPath(); c.arc(q[0], q[1], i ? 4 : 7, 0, Math.PI * 2); c.fill(); }); c.shadowBlur = 0; }
+  C.open = function (id) { if (!C.trees[id]) return; C.close(); const T = TECH[id], t = C.trees[id]; const m = document.createElement('div'); m.id = 's2cst';
+    m.style.cssText = 'position:fixed;inset:0;z-index:60;background:rgba(3,5,12,.82);display:flex;align-items:center;justify-content:center';
+    m.innerHTML = `<div class="panel" style="max-width:760px;width:92%;padding:16px"><h3 style="margin:0">${esc(T.n || id)} — Constellation</h3><p class="muted" style="margin:4px 0 8px">Forme : ${FAMFR[t.fam] || t.fam} · ${lit(id)}/${t.stars.length} étoiles (une branche s’allume par étoile de Maîtrise) · +2 % de dégâts par étoile</p><canvas width="700" height="440" style="width:100%;border-radius:10px"></canvas><p class="muted" style="font-size:12px">${t.stars.map((s, i) => (i < lit(id) ? '★ ' : '☆ ') + esc(s.n)).join(' · ')}</p><button class="btn" id="s2cstx">Fermer (Échap)</button></div>`;
+    document.body.appendChild(m); draw(m.querySelector('canvas'), id); m.onclick = (e) => { if (e.target === m || e.target.id === 's2cstx') C.close(); }; };
+  C.close = () => { const m = document.getElementById('s2cst'); if (m) m.remove(); };
+  let hov = null;
+  document.addEventListener('mouseover', (e) => { const c = e.target.closest && e.target.closest('[data-tech]'); if (c) hov = c.dataset.tech; }, true);
+  document.addEventListener('contextmenu', (e) => { const c = e.target.closest && e.target.closest('[data-tech]'); if (c) { e.preventDefault(); C.open(c.dataset.tech); } }, true);
+  document.addEventListener('keydown', (e) => { if (e.code === 'Escape' && document.getElementById('s2cst')) { C.close(); e.stopPropagation(); return; }
+    if (e.code === 'KeyK' && G.paused !== false && document.querySelector('[data-tech]') && hov && !/INPUT|SELECT/.test(e.target.tagName)) { const vis = document.querySelector('[data-tech="' + hov + '"]'); if (vis && vis.offsetParent) { C.open(hov); e.preventDefault(); } } }, true);
+  S2.note('cst', '#b7a3ff', 'Constellations uniques', Object.keys(C.trees).length + ' constellations, une par technique, toutes distinctes, en ' + FAMS.length + ' formes thématiques. Clic droit ou K sur une technique. +2 % de dégâts par étoile allumée.');
+})();
 (function(){ S2.flushNotes(); })();
 
 </script>

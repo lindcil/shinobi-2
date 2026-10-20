@@ -11,11 +11,12 @@ Modes à stades (Bête + manteaux, pupilles solaire/lunaire/céleste/miroir/néa
 | Poussée anti-chevauchement joueur/cible | porté (désactivé pendant les saisies) | src/10_rig.js |
 | Réduction des flashs (option, activée par défaut) + impact frames réservées aux grands moments | porté, adapté à G.flashA | src/20_flash.js |
 
-## Manquant → NON porté (pour l’instant)
+| Réactions triples/quadruples/quintuple + dōjutsu | porté v7.1, fusionné avec les doubles de la base | src/30_reactions.js |
+| Constellations uniques (461) | porté v7.1 | src/40_const.js |
+
+## Manquant → NON porté (prévu : l’utilisateur a validé les noms canon) (pour l’instant)
 | Système | Raison |
 |---|---|
-| Réactions doubles/triples/quadruples (ext31/43) | dépend du système d’éléments/modes d’Éternel ; la base a ses propres réactions — à fusionner dans une prochaine étape |
-| Constellations uniques (ext41/45) | à régénérer pour les IDs TECH de la base ; prochaine étape |
 | Monde ouvert, maîtres, événements, routes PNJ (ext35/38/40) | architecture de carte différente (histoire/raid/tour de la base) |
 | 9 bijū canon (ext32), 50 techniques secrètes (ext33), Susanoo/duo (ext36) | doublonneraient les systèmes de la base, noms canon contraires à sa politique de noms originaux |
 | Spéciaux Hiruzen/Asuma/Naruto/Sasuke (ext42) | noms canon + dépendance aux modes d’Éternel |
