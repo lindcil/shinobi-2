@@ -1,3 +1,5 @@
+Mode Créatif intégré (commun aux 3 jeux) : fini le panneau créatif flottant. Menu titre › Créatif (ou Tab en jeu) ouvre le Mode Créatif avec son panneau : Choc de Bijūdama, Choc de ruées, Choc de techniques, Simulation de moveset, Simulateur de boss, Labo libre (outils intégrés), Éditeur de maîtrise. Chaque jeu finit sur Revanche · Changer de jeu · Réglages · Quitter, rejouable à l'infini. Défaites unifiées (Recommencer / Retour au menu), réapparition en monde ouvert.
+
 # Shinobi 2 — Mise à jour 7
 - Nouveau rig squelettique (FK + IK), pieds/genoux toujours orientés vers le regard (630 cas vérifiés en 8 directions).
 - Smears ZZZ en croissant, couleur du personnage, 4–5 images, plus grands sur les finishers.
