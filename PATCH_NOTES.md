@@ -74,3 +74,8 @@ Tout se réaffecte dans **Options → Touches** (clic puis touche, échange auto
 - **Rythme** : jeu 10 % plus lent, incantations ×1,3 avec temps de récupération après chaque technique, M1 un peu plus lent.
 - Bouton **« Retour au menu des jeux »** sur l’écran titre (lindcil.github.io).
 
+
+# Shinobi 2 — Mise à jour 15 : Navigateur de Ninjutsu (20 octobre 2026)
+- Bouton **忍 Ninjutsu** sur l’écran titre : toutes les techniques avec les filtres de Préparation (rôle : projectile, zone, mobilité, contrôle…, élément, rareté, techniques de mode / ultimes, type), recherche et tri, fiche détaillée.
+- Rencontres du monde ouvert : toutes au même taux.
+- XP ×5 (déjà actif depuis la mise à jour 13).
