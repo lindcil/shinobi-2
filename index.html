@@ -9671,7 +9671,7 @@ UI.hub = function (tab) {
   refreshBoard(p); this.stopPreview();
   startDemo(); this.show('scr-hub'); $('#touch').hidden = true; $('#creative').hidden = true; document.body.classList.remove('crea-open'); $('#hudbtns').hidden = true; this.tutorialStep(0);
   const newItems = (p.inv || []).filter((i) => i.isNew).length;
-  const tabs = [['missions', '任', 'Missions'], ['prep', '備', 'Préparation'], ['equip', '鎧', 'Équipement'], ['outils', '具', 'Outils ninja'], ['voies', '道', 'Voies'], ['biblio', '書', 'Bibliothèque'], ['codex', '典', 'Codex'], ['ach', '誉', 'Hauts faits'], ['look', '装', 'Apparence'], ['opts', '設', 'Options']];
+  const tabs = [['missions', '任', 'Missions'], ['prep', '備', 'Préparation'], ['equip', '鎧', 'Équipement'], ['outils', '具', 'Outils ninja'], ['arene', '闘', 'Arène'], ['voies', '道', 'Voies'], ['biblio', '書', 'Bibliothèque'], ['codex', '典', 'Codex'], ['ach', '誉', 'Hauts faits'], ['look', '装', 'Apparence'], ['opts', '設', 'Options']];
   const lockV = p.lv < SYS_UNLOCK.voies.lv; const parPts = p.par ? p.par.pts : 0;
   $('#scr-hub').innerHTML = `${this.hubHeader()}<nav class="tabs" role="tablist">${tabs.map(([k, s, n]) => {
     const pip = k === 'voies' && !lockV && (p.sp + parPts) > 0 ? p.sp + parPts : k === 'equip' && newItems ? newItems : 0;
@@ -12638,6 +12638,256 @@ for (const k of ['celeste', 'miroir', 'neant', 'solaire', 'lunaire', 'anneaux', 
   const beg = UI.enterGame; UI.enterGame = function () { wipe(); return beg.apply(this, arguments); };
   // Raccourci : Échap ferme aussi la constellation (déjà), Maj+? ouvre le Guide
   S2.note('crea', '#7ab8ff', 'Créatif+ et confort', 'Panneau Créatif : choc de Bijūdama, Mode Jinchūriki par bijū, toutes les pupilles et modes appris à n’importe quel stade, simulateur de boss, labo des réactions, labo des ultimes/secrètes/spéciales, créateur de moveset (sauvegarde + simulation contre l’IA), maîtrise maximale. Confort : C maintenu + E/F monte au stade max, transitions à l’encre entre écrans et onglets.');
+})();
+/* Mise à jour 16 — Portage depuis Shinobi Éternel II : « L’Éveil des Pupilles » (5 clans, 5 pupilles à 3 stades,
+   techniques, ennemis, boss, arènes) + techniques de mode d’Éternel (Bijū, Sharingan, Byakugan, Rinnegan, Ruée/Explosion de chakra). */
+(function () {
+  if (CLANS.akane) return;
+  try {
+  // ---- Nouvelles techniques
+  T('feu_lotus', 'Lotus Incandescent', 'ninjutsu', 'feu', 'nova', 22, 8, 40, 2, { r: 170, kb: 500, st: { heat: 40 }, seals: 2 }, 'Une fleur de feu éclot autour de vous.');
+  T('feu_meteores', 'Pluie de Météores Ardents', 'ninjutsu', 'feu', 'meteor', 30, 11, 46, 3, { r: 90, cnt: 4, delay: 0.9, zone: { t: 'fire', r: 70, dur: 3 }, seals: 4 }, 'Quatre météores enflammés.');
+  T('feu_lame', 'Lame Écarlate', 'ninjutsu', 'feu', 'dash', 20, 6, 58, 2, { rng: 320, w: 46, slash: 1, st: { heat: 30 } }, 'Charge en traçant une ligne de feu.');
+  T('vent_croix', 'Croix du Zéphyr', 'ninjutsu', 'vent', 'proj', 18, 6, 22, 2, { cnt: 8, spr: TAU, radial: 1, spd: 820, r: 12, life: 0.6, pierce: 3, shape: 'crescent', seals: 2 }, 'Huit lames d’air en étoile.');
+  T('vent_faux', 'Faux du Vent Noir', 'ninjutsu', 'vent', 'cone', 20, 6, 36, 3, { rng: 300, arc: 0.9, kb: 800, seals: 2 }, 'Un fauchage d’air qui balaie tout.');
+  T('eau_geyser', 'Colonnes Marines', 'ninjutsu', 'eau', 'rain', 22, 8, 30, 2, { cnt: 5, r: 70, rng: 480, st: { wet: 1, heat: -20 }, zone: { t: 'puddle', r: 60, dur: 6 }, seals: 3 }, 'Des colonnes d’eau jaillissent sous les ennemis.');
+  T('eau_marees', 'Prison des Marées', 'ninjutsu', 'eau', 'bind', 26, 12, 14, 3, { rng: 420, dur: 2.2, multi: 4, st: { wet: 1 }, seals: 3 }, 'Enferme jusqu’à quatre ennemis.');
+  T('terre_crocs', 'Crocs de la Terre', 'ninjutsu', 'terre', 'ring', 24, 9, 40, 3, { rng: 400, cnt: 10, st: { knockup: 1 }, seals: 3 }, 'Des crocs de pierre se referment sur la cible.');
+  T('terre_seisme', 'Séisme', 'ninjutsu', 'terre', 'nova', 26, 10, 44, 3, { r: 260, kb: 320, delay: 0.5, st: { knockup: 1 }, seals: 3 }, 'Le sol tremble et projette tout le monde.');
+  T('foudre_lance', 'Lance Céleste', 'ninjutsu', 'foudre', 'beam', 24, 7, 70, 3, { rng: 720, w: 30, delay: 0.3, st: { shock: 0.6 }, seals: 2 }, 'Un éclair rectiligne qui transperce.');
+  T('foudre_dragon', 'Dragon Fulgurant', 'ninjutsu', 'foudre', 'proj', 30, 9, 72, 4, { r: 28, spd: 560, life: 1.3, pierce: 9, shape: 'dragon', st: { shock: 0.6 }, seals: 4 }, 'Un dragon d’éclairs traverse l’arène.');
+  T('tai_meteore', 'Poing Météore', 'taijutsu', 'neutre', 'dash', 14, 6, 66, 2, { rng: 260, w: 60 }, 'Une charge qui écrase tout sur son passage.');
+  T('tai_tornade', 'Tornade du Lotus', 'taijutsu', 'neutre', 'launcher', 18, 8, 85, 3, { rng: 300 }, 'Projette la cible dans les airs et l’écrase.');
+  T('ken_eclipse', 'Éclipse Tranchante', 'kenjutsu', 'neutre', 'nova', 16, 7, 42, 3, { r: 150, kb: 420, melee: 1, spin: 1, st: { bleed: 4 } }, 'Un cercle de lame parfait.');
+  T('ken_vide', 'Lame du Vide', 'kenjutsu', 'neutre', 'beam', 28, 11, 120, 4, { rng: 700, w: 36, delay: 0.35 }, 'Une entaille qui fend l’espace.');
+  T('gen_miroirs', 'Labyrinthe de Miroirs', 'genjutsu', 'illusion', 'gen', 26, 14, 0, 3, { rng: 320, arc: TAU, eff: 'charm', dur: 3, seals: 3 }, 'Les ennemis proches se retournent les uns contre les autres.');
+  T('gen_lune', 'Lune Rouge', 'genjutsu', 'illusion', 'gen', 24, 12, 30, 3, { rng: 420, single: 1, eff: 'trance', dur: 6, dot: 1, seals: 3 }, 'Une longue transe douloureuse.');
+  T('fuin_kunais', 'Tempête de Kunaïs', 'fuinjutsu', 'neutre', 'proj', 16, 6, 16, 2, { cnt: 9, spr: 0.9, spd: 820, r: 7, life: 0.7, shape: 'kunai' }, 'Neuf kunaïs scellés en éventail.');
+  T('iryo_aura', 'Aura Vitale', 'iryo', 'neutre', 'heal', 30, 14, 110, 3, { r: 260 }, 'Un grand soin de groupe.');
+
+  // ---- Pupilles (dōjutsu) supplémentaires
+  T('eye_sang', 'Pluie Sanglante', 'dojutsu', 'feu', 'rain', 26, 10, 38, 4, { cnt: 9, r: 60, rng: 560, st: { bleed: 5 }, eye: 'sang' }, 'Neuf lances de sang s’abattent sur les ennemis.');
+  T('eye_temps', 'Arrêt du Temps', 'dojutsu', 'illusion', 'gen', 34, 18, 0, 5, { rng: 460, arc: TAU, eff: 'trance', dur: 3, eye: 'temps' }, 'Tout ce qui vous entoure se fige.');
+  T('eye_typhon', 'Œil du Typhon', 'dojutsu', 'tempete', 'zone', 30, 12, 18, 4, { r: 200, dur: 5, t: 'storm', at: 'target', eye: 'tempete' }, 'Un orage concentré foudroie la zone.');
+  T('eye_spectre', 'Passage Spectral', 'dojutsu', 'neutre', 'teleport', 18, 5, 70, 4, { rng: 560, eye: 'spectre' }, 'Traversez l’espace et frappez dans le dos.');
+  T('eye_divin', 'Jugement Divin', 'dojutsu', 'neutre', 'beam', 40, 14, 170, 5, { rng: 950, w: 80, delay: 0.6, eye: 'divin' }, 'Un rayon céleste qui efface tout.');
+  Object.assign(EYES, {
+    sang: { n: 'Œil de Sang', k: '血', c: '#ff3355', d: 'Dégâts +15 %. Vous volez 10 % des dégâts infligés en PV.', act: 'eye_sang' },
+    temps: { n: 'Œil du Temps', k: '時', c: '#ffe9a8', d: 'Vos recharges s’écoulent 40 % plus vite. Peut figer le temps.', act: 'eye_temps' },
+    tempete: { n: 'Œil Tempête', k: '嵐', c: '#58c9ff', d: 'Foudre, vent et tempête +30 %. Invoque un typhon.', act: 'eye_typhon' },
+    spectre: { n: 'Œil Spectral', k: '霊', c: '#9cffd8', d: '20 % des coups vous traversent. Révèle les invisibles.', act: 'eye_spectre' },
+    divin: { n: 'Œil Divin', k: '神', c: '#ffd36b', d: 'Toutes vos techniques +20 %, chakra +3/s. La pupille ultime.', act: 'eye_divin' },
+  });
+
+  // ---- Clans
+  T('sec_sang', 'Banquet Écarlate', 'secret', 'feu', 'nova', 40, 40, 70, 5, { r: 280, kb: 600, st: { bleed: 6, heat: 30 }, clan: 'akane' }, 'Une explosion de sang qui fait saigner tout le monde.');
+  T('sec_temps', 'Boucle Temporelle', 'secret', 'neutre', 'buff', 30, 50, 0, 5, { dur: 9, buff: 'mirror', clan: 'tokiwa' }, 'Le temps se replie : recharges réinitialisées, coûts divisés par deux.');
+  T('sec_raiden', 'Colère du Shōgun', 'secret', 'foudre', 'rain', 42, 40, 44, 5, { cnt: 16, r: 70, rng: 640, st: { shock: 0.6 }, clan: 'raiden' }, 'Seize éclairs pulvérisent le champ de bataille.');
+  T('sec_yurei', 'Nuit des Spectres', 'secret', 'illusion', 'gen', 38, 40, 30, 5, { rng: 420, arc: TAU, eff: 'fear', dur: 5, dot: 1, clan: 'yurei' }, 'Les morts hurlent : les ennemis fuient en souffrant.');
+  T('sec_tenmei', 'Chute des Cieux', 'secret', 'neutre', 'meteor', 46, 45, 140, 5, { r: 200, cnt: 3, delay: 1, clan: 'tenmei' }, 'Trois astres tombent du ciel.');
+  Object.assign(CLANS, {
+    akane: { n: 'Akane', k: '茜', el: 'feu', c: '#ff3355', p: 'Soif de Sang', pd: 'Vos coups font saigner, +10 % de dégâts sous 50 % de PV.', sec: 'sec_sang', eye: 'sang', start: ['feu_phenix', 'ken_iai'], sword: 1, look: { hair: '#2a0a10', outfit: '#3a0c16', scarf: '#ff3355' } },
+    tokiwa: { n: 'Tokiwa', k: '常盤', el: 'eau', c: '#ffe9a8', p: 'Gardiens du Temps', pd: 'Esquives plus rapides, recharges −10 %.', sec: 'sec_temps', eye: 'temps', start: ['eau_balle', 'fuin_eclair'], look: { hair: '#e8dcc0', outfit: '#2a3a4a', scarf: '#ffe9a8' } },
+    raiden: { n: 'Raiden', k: '雷電', el: 'foudre', c: '#58c9ff', p: 'Sang d’Orage', pd: 'Vos éclairs mouillent et paralysent plus longtemps.', sec: 'sec_raiden', eye: 'tempete', start: ['foudre_lame', 'foudre_jugement'], look: { hair: '#1a2a4a', outfit: '#141a2e', scarf: '#58c9ff' } },
+    yurei: { n: 'Yūrei', k: '幽霊', el: 'vent', c: '#9cffd8', p: 'Pas Fantôme', pd: 'Vous êtes plus difficile à cibler, genjutsu +20 %.', sec: 'sec_yurei', eye: 'spectre', start: ['gen_doubles', 'vent_lame'], look: { hair: '#e8fff6', outfit: '#1a2a26', scarf: '#9cffd8' } },
+    tenmei: { n: 'Tenmei', k: '天命', el: 'terre', c: '#ffd36b', p: 'Destin Céleste', pd: 'Héritiers du Dieu à l’Œil Unique. Toutes les stats légèrement accrues.', sec: 'sec_tenmei', eye: 'divin', start: ['spirale', 'onde'], look: { hair: '#f4f0e0', outfit: '#3a2e14', scarf: '#ffd36b' } },
+  });
+  CLAN_ORDER.push('akane', 'tokiwa', 'raiden', 'yurei', 'tenmei');
+  Object.assign(CLAN_UNLOCK, { akane: 14, tokiwa: 22, raiden: 28, yurei: 36, tenmei: 55 });
+
+  // ---- Ennemis et boss
+  Object.assign(MOBS, {
+    spectre: { n: 'Spectre errant', ai: 'assassin', hp: 70, spd: 240, dmg: 15, xp: 18, ryo: 12, mind: 0.6, skill: 0.6, look: { hair: '#dff', outfit: '#1a2a2a', scarf: '#9cffd8', mask: 1 } },
+    chaman: { n: 'Chaman des Orages', ai: 'caster', hp: 95, spd: 160, dmg: 12, xp: 18, ryo: 12, mind: 0.4, skill: 0.6, el: 'foudre', look: { hair: '#1a2a4a', outfit: '#20304a', scarf: '#58c9ff' } },
+    garde_temps: { n: 'Garde du Temps', ai: 'samurai', hp: 170, spd: 150, dmg: 18, xp: 24, ryo: 16, mind: 0.6, skill: 0.6, block: 1, sword: 1, look: { hair: '#e8dcc0', outfit: '#2a3a4a', scarf: '#ffe9a8' } },
+    sanguinaire: { n: 'Lame Sanguinaire', ai: 'brute', hp: 110, spd: 200, dmg: 16, xp: 18, ryo: 12, mind: 0.3, skill: 0.4, sword: 1, look: { hair: '#2a0a10', outfit: '#3a0c16', scarf: '#ff3355' } },
+  });
+  Object.assign(BOSSES, {
+    reine_sang: { n: 'Reine Écarlate Akane', ai: 'boss', hp: 1300, spd: 200, dmg: 22, xp: 230, ryo: 170, mind: 0.6, skill: 0.8, size: 1.2, sword: 1, el: 'feu', moves: ['eye_sang', 'feu_lame', 'sec_sang', 'croissant'], look: { hair: '#2a0a10', outfit: '#3a0c16', scarf: '#ff3355' } },
+    horloger: { n: 'L’Horloger Sans Âge', ai: 'boss', hp: 1500, spd: 170, dmg: 20, xp: 250, ryo: 180, mind: 1, skill: 0.7, size: 1.25, el: 'eau', moves: ['eye_temps', 'eau_marees', 'eau_geyser', 'fuin_kunais'], look: { hair: '#e8dcc0', outfit: '#2a3a4a', scarf: '#ffe9a8', mask: 1 } },
+    shogun: { n: 'Shōgun Raiden', ai: 'boss', hp: 1800, spd: 190, dmg: 26, xp: 270, ryo: 200, mind: 0.6, skill: 0.8, size: 1.35, sword: 1, el: 'foudre', moves: ['eye_typhon', 'foudre_lance', 'sec_raiden', 'foudre_dragon'], look: { hair: '#1a2a4a', outfit: '#141a2e', scarf: '#58c9ff' } },
+    roi_spectre: { n: 'Roi des Spectres', ai: 'boss', hp: 1700, spd: 210, dmg: 24, xp: 280, ryo: 210, mind: 0.9, skill: 0.8, size: 1.3, el: 'illusion', moves: ['eye_spectre', 'sec_yurei', 'gen_lune', 'doubles'], look: { hair: '#e8fff6', outfit: '#0e1a18', scarf: '#9cffd8', mask: 1 } },
+    dieu_oeil: { n: 'Le Dieu à l’Œil Unique', ai: 'boss', hp: 2600, spd: 180, dmg: 30, xp: 400, ryo: 320, mind: 1, skill: 0.9, size: 1.6, el: 'neutre', moves: ['eye_divin', 'sec_tenmei', 'eye_temps', 'grav_repousse', 'eye_typhon'], look: { hair: '#f4f0e0', outfit: '#2a2210', scarf: '#ffd36b', mask: 1 } },
+  });
+
+  // ---- Arènes
+  Object.assign(BIOMES, {
+    bambous: { n: 'Bambouseraie Écarlate', g1: '#24301a', g2: '#34442a', g3: '#4c5e34', ob: 'bamboo', amb: 2, tint: '#160a08', zones: [], mobs: ['sanguinaire', 'bandit', 'lanceur', 'assassin', 'samourai'] },
+    cote: { n: 'Côte des Tempêtes', g1: '#2a3a44', g2: '#34505c', g3: '#4a6a74', ob: 'rock', amb: -4, tint: '#06101a', zones: ['puddle', 'puddle', 'storm'], mobs: ['chaman', 'lanceur', 'samourai', 'deserteur', 'colosse'] },
+    horloge: { n: 'Temple de l’Horloge', g1: '#3a3428', g2: '#4a4434', g3: '#665e48', ob: 'pillar', amb: 0, tint: '#141006', zones: ['ice'], mobs: ['garde_temps', 'moine', 'illusionniste', 'medic', 'samourai'] },
+    abysses: { n: 'Abysses Spectrales', g1: '#10141a', g2: '#182028', g3: '#22303a', ob: 'deadtree', amb: -6, tint: '#020608', zones: ['mist', 'poison'], mobs: ['spectre', 'illusionniste', 'assassin', 'marionnettiste', 'spectre'] },
+  });
+  BIOME_ORDER.push('bambous', 'cote', 'horloge', 'abysses');
+
+  // ---- Effets passifs des nouvelles pupilles
+  const baseTP = techPower;
+  techPower = function (u, T) {
+    let m = baseTP(u, T);
+    if (u.eyeOn) {
+      if (u.eye === 'sang') m *= 1.15;
+      if (u.eye === 'tempete' && (T.el === 'foudre' || T.el === 'vent' || T.el === 'tempete')) m *= 1.3;
+      if (u.eye === 'divin') m *= 1.2;
+    }
+    if (u.clan === 'akane' && u.hp < u.maxHp * 0.5) m *= 1.1;
+    return m;
+  };
+  const baseDD = dealDamage;
+  dealDamage = function (src, tgt, base, o = {}) {
+    if (tgt && tgt.eyeOn && tgt.eye === 'spectre' && !o.zone && Math.random() < 0.2) { FX.text(tgt.x, tgt.y - 70, 'Intangible', '#9cffd8', 15); return 0; }
+    const r = baseDD(src, tgt, base, o);
+    if (r > 0 && src && alive(src) && src.eyeOn && src.eye === 'sang') src.hp = Math.min(src.maxHp, src.hp + r * 0.1);
+    return r;
+  };
+  const baseUU = updateUnit;
+  updateUnit = function (u, dt) {
+    const r = baseUU(u, dt);
+    if (u.eyeOn && !u.dead) {
+      if (u.eye === 'temps' && u.cds) for (const k in u.cds) if (u.cds[k] > 0) u.cds[k] = Math.max(0, u.cds[k] - dt * 0.4);
+      if (u.eye === 'divin') u.ch = Math.min(u.maxCh, u.ch + 3 * dt);
+      if (u.eye === 'spectre') for (const v of G.units) if (v.stealthed && v.team !== u.team && dist(u.x, u.y, v.x, v.y) < 500) v.stealthed = false;
+    }
+    return r;
+  };
+
+  // ---- Modes : Chroniques (histoire) et Rush des Boss
+  } catch (err) { console.warn('port16 data', err.message); }
+  try {
+  const MT = (id, n, el, kind, cost, cd, dmg, rar, p, desc) => { T(id, n, 'mode', el, kind, cost, cd, dmg, rar, Object.assign({ mode: 1, s16: 1 }, p), desc); };
+  CATS.mode = CATS.mode || { n: 'Mode', k: '模' };
+  MT('bj_griffe', 'Griffe de Chakra', 'feu', 'nova', 0, 2.5, 46, 4, { r: 140, kb: 520, melee: 1, spin: 1, bc: 1 }, 'Un coup de griffe circulaire du manteau.');
+  MT('bj_bras', 'Bras de Chakra', 'feu', 'bind', 0, 5, 28, 4, { rng: 460, dur: 1.2, pull: 1, bc: 1 }, 'Un bras de chakra attrape et ramène la cible.');
+  MT('bj_bond', 'Bond Bestial', 'feu', 'dash', 0, 3, 60, 4, { rng: 360, w: 64, bc: 1 }, 'Bond à quatre pattes à travers les ennemis.');
+  MT('bj_rugir', 'Rugissement', 'feu', 'cone', 0, 6, 30, 4, { rng: 320, arc: 1, kb: 1000, bc: 1 }, 'Le cri repousse tout devant vous.');
+  MT('bj_mini', 'Mini Bijūdama', 'neutre', 'proj', 0, 4, 90, 5, { r: 12, spd: 520, life: 1.3, ex: 120, shape: 'bijuu', grow: 22, rMax: 42, bc: 1 }, 'Petite bombe à queues qui grossit en vol.');
+  MT('bj_queues', 'Fouet des Queues', 'feu', 'nova', 0, 5, 60, 4, { r: 220, kb: 700, bc: 1 }, 'Toutes les queues balaient autour de vous.');
+  MT('bj_bijudama', 'Bijūdama', 'neutre', 'proj', 0, 8, 280, 5, { r: 30, spd: 340, life: 2.4, ex: 300, shape: 'bijuu', grow: 45, rMax: 125, charge: 0.7, bc: 1 }, 'La bombe ultime : se forme dans la gueule puis grossit jusqu’à l’impact.');
+  MT('bj_massue', 'Coup de Queue Titan', 'feu', 'nova', 0, 7, 130, 5, { r: 330, kb: 1200, delay: 0.3, bc: 1 }, 'Les queues géantes écrasent toute la zone.');
+  MT('bj_titan', 'Rugissement Titanesque', 'feu', 'cone', 0, 6, 70, 5, { rng: 560, arc: 1.2, kb: 1500, bc: 1 }, 'Un cri qui renverse une armée.');
+  MT('bj_pietine', 'Piétinement', 'terre', 'nova', 0, 5, 90, 5, { r: 260, delay: 0.5, st: { knockup: 1 }, bc: 1 }, 'La bête frappe le sol, tout est projeté.');
+  MT('bj_rasen', 'Rasengan Bijū', 'neutre', 'grind', 0, 5, 60, 5, { rng: 160, bc: 1 }, 'Sphère de chakra bijū broyée sur la cible.');
+  MT('bj_milbras', 'Mille Bras de Chakra', 'feu', 'rain', 0, 6, 42, 5, { cnt: 10, r: 60, rng: 560, bc: 1 }, 'Des bras de chakra frappent partout à la fois.');
+  MT('bj_orbit', 'Bijūdama Orbitale', 'neutre', 'proj', 0, 6, 50, 5, { cnt: 6, spr: TAU, radial: 1, spd: 420, r: 9, life: 1.1, ex: 80, shape: 'bijuu', grow: 10, rMax: 22, bc: 1 }, 'Six petites bombes jaillissent autour de vous.');
+  MT('bj_pasdore', 'Pas Doré', 'neutre', 'teleport', 0, 3, 85, 5, { rng: 620, bc: 1 }, 'Éclair doré derrière la cible.');
+  MT('shr_lecture', 'Lecture Prédictive', 'illusion', 'buff', 8, 6, 0, 4, { dur: 1.5, buff: 'parry' }, 'Vous lisez le prochain coup : parade et contre automatique.');
+  MT('shr_kunai', 'Kunaïs Prédits', 'neutre', 'proj', 6, 2.5, 18, 3, { cnt: 3, spr: 0.12, burst: 0.07, spd: 1100, r: 6, life: 0.7, hom: 1.5, shape: 'kunai' }, 'Trois kunaïs légèrement guidés.');
+  MT('shr_genjutsu', 'Genjutsu du Miroir', 'illusion', 'gen', 18, 9, 0, 4, { rng: 380, arc: 0.9, eff: 'trance', dur: 3.5 }, 'Un regard : tous ceux en face tombent en transe.');
+  MT('shr_amaterasu', 'Flammes Noires', 'noir', 'proj', 26, 7, 30, 5, { r: 14, spd: 1200, life: 0.6, st: { black: 6 }, shape: 'black', zone: { t: 'blackfire', r: 60, dur: 5 } }, 'Flammes noires inextinguibles qui restent au sol.');
+  MT('shr_tsukuyomi', 'Lune Infinie', 'illusion', 'gen', 30, 14, 60, 5, { rng: 420, single: 1, eff: 'trance', dur: 7, dot: 1 }, 'Sept secondes d’enfer mental pour une cible.');
+  MT('shr_kamui', 'Distorsion', 'neutre', 'teleport', 18, 5, 50, 5, { rng: 600, iframe: 0.6 }, 'Vous traversez l’espace, intangible.');
+  MT('shr_cote', 'Côte du Colosse', 'neutre', 'buff', 20, 12, 0, 5, { dur: 4, buff: 'deflect' }, 'La cage thoracique du Colosse renvoie les projectiles.');
+  MT('shr_epee', 'Lame du Colosse', 'noir', 'beam', 34, 10, 210, 5, { rng: 820, w: 90, delay: 0.4 }, 'L’épée du Colosse fend l’arène.');
+  MT('shr_fleche', 'Flèche du Colosse', 'noir', 'proj', 26, 6, 130, 5, { r: 18, spd: 1500, life: 0.8, pierce: 9, shape: 'arrow' }, 'Une flèche géante qui transperce tout.');
+  MT('byk_rotation', 'Rotation Céleste', 'neutre', 'nova', 14, 6, 30, 4, { r: 150, kb: 1000, spin: 1, iframe: 0.5 }, 'Vous tournez sur vous-même : bouclier et repoussée.');
+  MT('byk_vide', 'Paume du Vide', 'neutre', 'proj', 12, 3, 50, 4, { r: 34, spd: 900, life: 0.4, kb: 1400, shape: 'palm' }, 'Onde de paume qui propulse au loin.');
+  MT('byk_128', '128 Paumes', 'neutre', 'barrage', 22, 10, 7, 5, { rng: 100, hits: 32, dur: 1.6, st: { seal: 6 } }, 'Trente-deux frappes qui ferment les points de chakra.');
+  MT('byk_lions', 'Poings des Lions Jumeaux', 'neutre', 'dash', 16, 5, 80, 5, { rng: 300, w: 70 }, 'Deux têtes de lion en chakra chargent.');
+  MT('byk_orbes', 'Orbes de Vérité', 'neutre', 'proj', 24, 7, 40, 5, { cnt: 5, spr: TAU, radial: 1, hom: 3, spd: 520, r: 14, life: 1.6, shape: 'orbtruth' }, 'Cinq orbes noirs qui traquent.');
+  MT('byk_ciel', 'Rayon Céleste', 'neutre', 'beam', 32, 11, 180, 5, { rng: 900, w: 60, delay: 0.4 }, 'Le rayon de l’Œil Céleste Absolu.');
+  MT('rin_shinra', 'Répulsion Céleste', 'gravite', 'nova', 20, 7, 55, 5, { r: 300, kb: 1500 }, 'Tout est repoussé autour de vous.');
+  MT('rin_bansho', 'Attraction Universelle', 'gravite', 'bind', 14, 5, 20, 5, { rng: 520, pull: 1, dur: 1 }, 'La cible est attirée jusqu’à vous.');
+  MT('rin_preta', 'Voie Preta', 'gravite', 'buff', 16, 10, 0, 4, { dur: 3, buff: 'deflect' }, 'Absorbe et renvoie les jutsu.');
+  MT('rin_voies', 'Invocation des Voies', 'neutre', 'summon', 30, 18, 0, 5, { cnt: 3, dur: 12, what: 'clone' }, 'Trois Voies combattent à vos côtés.');
+  MT('rin_asura', 'Missiles de la Voie Asura', 'neutre', 'proj', 20, 6, 30, 5, { cnt: 6, spr: 0.8, spd: 650, r: 8, life: 1, ex: 80, hom: 2, shape: 'tag' }, 'Une salve de missiles.');
+  MT('rin_rocs', 'Rocs Planétaires', 'terre', 'meteor', 0, 0, 50, 5, { r: 90, cnt: 6, delay: 1.2 }, '');
+  MT('rin_chibaku', 'Dévastation Planétaire', 'gravite', 'zone', 36, 16, 30, 5, { r: 280, dur: 5, t: 'gravity', at: 'target', then: 'rin_rocs' }, 'Un noyau aspire roches et ennemis, puis tout s’écrase.');
+  MT('rin_tengai', 'Chute Céleste', 'terre', 'meteor', 44, 20, 320, 5, { r: 260, cnt: 1, delay: 1.6 }, 'Un météore tombe du ciel.');
+  MT('rin_gudo', 'Orbes de Vérité', 'gravite', 'proj', 24, 7, 45, 5, { cnt: 6, spr: TAU, radial: 1, hom: 3, spd: 500, r: 14, life: 1.6, shape: 'orbtruth' }, 'Six orbes qui détruisent tout.');
+  MT('sol_soleil', 'Soleil Noir', 'noir', 'meteor', 40, 16, 260, 5, { r: 220, cnt: 1, delay: 1.2, zone: { t: 'blackfire', r: 160, dur: 5 } }, 'Un soleil noir s’écrase.');
+  MT('lun_infinie', 'Lune Infinie', 'illusion', 'gen', 40, 20, 40, 5, { rng: 600, arc: TAU, eff: 'trance', dur: 6, dot: 1 }, 'Toute l’arène tombe en transe.');
+  MT('sang_lune', 'Lune de Sang', 'feu', 'nova', 34, 14, 110, 5, { r: 320, delay: 0.5, st: { bleed: 8 } }, 'Une explosion de sang autour de vous.');
+  MT('tmp_rewind', 'Retour en Arrière', 'neutre', 'heal', 24, 14, 120, 5, { r: 120 }, 'Vous remontez le temps de vos blessures.');
+  MT('tmp_arret', 'Arrêt Total', 'illusion', 'gen', 40, 22, 0, 5, { rng: 700, arc: TAU, eff: 'trance', dur: 4 }, 'Le temps s’arrête dans toute l’arène.');
+  MT('tem_ciel', 'Ciel en Colère', 'foudre', 'rain', 38, 14, 50, 5, { cnt: 18, r: 70, rng: 700, st: { shock: 0.6 } }, 'Dix-huit éclairs tombent.');
+  MT('spc_main', 'Mains Spectrales', 'illusion', 'bind', 22, 9, 30, 5, { rng: 460, dur: 2, multi: 5, dot: 1 }, 'Des mains de morts saisissent cinq ennemis.');
+  MT('spc_royaume', 'Royaume des Morts', 'illusion', 'gen', 36, 18, 50, 5, { rng: 500, arc: TAU, eff: 'fear', dur: 5, dot: 1 }, 'Les morts hurlent dans toute la zone.');
+  MT('div_lances', 'Lances Divines', 'neutre', 'rain', 26, 8, 45, 5, { cnt: 12, r: 55, rng: 600 }, 'Douze lances de lumière.');
+  MT('div_jugement', 'Jugement de l’Œil Unique', 'neutre', 'beam', 44, 18, 320, 5, { rng: 1200, w: 140, delay: 0.8 }, 'Un rayon qui traverse la carte.');
+  MT('v_rush', 'Ruée de Chakra', 'neutre', 'barrage', 12, 4, 9, 2, { rng: 120, hits: 9, dur: 0.75 }, 'Chakra + Coup : vous foncez et enchaînez neuf coups.');
+  MT('v_burst', 'Explosion de Chakra', 'neutre', 'nova', 35, 10, 25, 3, { r: 210, kb: 950 }, 'Chakra + Spécial : le chakra libéré repousse tout.');
+  } catch (err) { console.warn('port16 mt', err.message); }
+  try {
+  /* ---------- Éléments supplémentaires ---------- */
+  Object.assign(EL, {
+    acier: { n: 'Acier', k: '鋼', c: '#c8d0dc', c2: '#ffffff', lig: ['terre', 'foudre'] }, poussiere: { n: 'Poussière', k: '塵', c: '#f2f2e8', c2: '#ffffff', lig: ['feu', 'vent', 'terre'] }, cristal: { n: 'Cristal', k: '晶', c: '#c890ff', c2: '#f0d8ff', lig: ['terre', 'eau'] },
+    bouillon: { n: 'Ébullition', k: '沸', c: '#ff9a6a', c2: '#ffe0c0', lig: ['feu', 'eau', 'vent'] }, yinyang: { n: 'Yin-Yang', k: '陰', c: '#ffe9a0', c2: '#2a2036', lig: ['feu', 'eau', 'terre', 'vent', 'foudre'] },
+  });
+  const NEWEL = ['acier', 'poussiere', 'cristal', 'bouillon', 'yinyang'];
+  T('el_acier_lance', 'Lances d’Acier', 'ninjutsu', 'acier', 'proj', 18, 6, 40, 3, { cnt: 3, spr: 0.25, spd: 820, r: 8, life: 0.8, pierce: 2 }, 'Acier : perce les armures et fait saigner.');
+  T('el_acier_peau', 'Peau d’Acier', 'ninjutsu', 'acier', 'nova', 20, 12, 30, 3, { r: 160, kb: 500 }, 'Acier : une onde métallique qui fait saigner tout autour.');
+  T('el_jinton', 'Jinton : Désagrégation', 'ninjutsu', 'poussiere', 'beam', 40, 16, 120, 4, { rng: 800, w: 70, delay: 0.5 }, 'Poussière : un cube de lumière qui désagrège (dégâts en % des PV max).');
+  T('el_jinton_cube', 'Cube de Poussière', 'ninjutsu', 'poussiere', 'proj', 30, 10, 70, 4, { r: 18, spd: 420, life: 1.3, ex: 120 }, 'Poussière : un cube qui explose en désagrégeant.');
+  T('el_cristal_prison', 'Prison de Cristal', 'ninjutsu', 'cristal', 'nova', 28, 12, 50, 4, { r: 200, kb: 0 }, 'Cristal : cristallise les ennemis proches (immobilisés).');
+  T('el_cristal_eclats', 'Éclats de Cristal', 'ninjutsu', 'cristal', 'proj', 16, 5, 28, 3, { cnt: 5, spr: 0.6, spd: 700, r: 7, life: 0.8 }, 'Cristal : une gerbe d’éclats qui peuvent cristalliser.');
+  T('el_futton', 'Futton : Brume Corrosive', 'ninjutsu', 'bouillon', 'nova', 24, 10, 36, 3, { r: 220, kb: 200 }, 'Ébullition : vapeur bouillante qui ronge l’armure et empoisonne.');
+  T('el_futton_jet', 'Jet Bouillant', 'ninjutsu', 'bouillon', 'proj', 16, 5, 34, 3, { r: 12, spd: 600, life: 0.9, ex: 70 }, 'Ébullition : un jet d’eau bouillante corrosif.');
+  T('el_yinyang', 'Sceau Yin-Yang', 'ninjutsu', 'yinyang', 'proj', 22, 8, 52, 4, { r: 14, spd: 520, life: 1.1, hom: 2 }, 'Yin-Yang : vole de la vie et scelle les techniques.');
+  T('el_yinyang_nova', 'Création de Toute Chose', 'ninjutsu', 'yinyang', 'nova', 34, 16, 60, 4, { r: 240, kb: 400 }, 'Yin-Yang : une onde qui soigne tes alliés et scelle les ennemis.');
+  
+  for (const k of NEWEL) if (!LIGNEES.includes(k)) LIGNEES.push(k);
+  const bdd16 = dealDamage;
+  dealDamage = function (src, tgt, base, o = {}) {
+    const el = o.el; let extra = null;
+    if (src && tgt && NEWEL.includes(el) && !o._e36) {
+      if (el === 'acier') { if (tgt.armor > 0) base *= 1.35; o.st = Object.assign({ bleed: 2 }, o.st || {}); }
+      else if (el === 'poussiere') { base += Math.min(tgt.boss ? 90 : 160, tgt.maxHp * 0.05); }
+      else if (el === 'cristal') { if (Math.random() < 0.3 && !tgt.boss) { applyStatus(src, tgt, { root: 1.4 }); FX.kanji(tgt.x, tgt.y, 70, '晶', '#c890ff', 20, 0.6); } }
+      else if (el === 'bouillon') { tgt.armor = Math.max(0, (tgt.armor || 0) - 0.05); o.st = Object.assign({ poison: 2 }, o.st || {}); }
+      else if (el === 'yinyang') { extra = () => healUnit(src, base * 0.1, null, true); if (Math.random() < 0.25) applyStatus(src, tgt, { seal: 1.2 }); }
+    }
+    const r = bdd16.call(this, src, tgt, base, o); if (extra) extra(); return r;
+  };
+  } catch (err) { console.warn('port16 el', err.message); }
+  const S = (n, sub, sk, ult, extra) => Object.assign({ n, sub, sk, ult }, extra || {});
+  const NEW = {
+    sang: { n: 'Œil de Sang', k: '血', c: '#ff3355', stages: [S('Éveil', 'Vol de vie', ['eye_sang', 'feu_lame', 'ken_iai', 'feu_phenix'], null), S('Maîtrise', 'Danse rouge', ['eye_sang', 'ken_eclipse', 'feu_lame', 'ken_danse'], 'ken_danse'), S('Lune de Sang', 'Absolu', ['sang_lune', 'eye_sang', 'ken_eclipse', 'ken_vide', 'feu_lame'], 'sang_lune', { aura: 'halo' })] },
+    temps: { n: 'Œil du Temps', k: '時', c: '#ffe9a8', stages: [S('Éveil', 'Recharges rapides', ['eye_temps', 'fuin_eclair', 'eau_balle', 'fuin_kunais'], null), S('Maîtrise', 'Rembobinage', ['eye_temps', 'tmp_rewind', 'fuin_eclair', 'eau_marees'], 'tmp_rewind'), S('Horloge Brisée', 'Absolu', ['tmp_arret', 'tmp_rewind', 'eye_temps', 'fuin_eclair', 'eau_geyser'], 'tmp_arret', { aura: 'halo' })] },
+    tempete: { n: 'Œil Tempête', k: '嵐', c: '#58c9ff', stages: [S('Éveil', 'Foudre +30 %', ['eye_typhon', 'foudre_chaine', 'vent_lame', 'foudre_lance'], null), S('Maîtrise', 'Orage', ['eye_typhon', 'foudre_dragon', 'vent_faux', 'foudre_jugement'], 'foudre_jugement'), S('Ciel en Colère', 'Absolu', ['tem_ciel', 'eye_typhon', 'foudre_dragon', 'foudre_lance', 'vent_croix'], 'tem_ciel', { aura: 'halo' })] },
+    spectre: { n: 'Œil Spectral', k: '霊', c: '#9cffd8', stages: [S('Éveil', 'Intangible', ['eye_spectre', 'gen_doubles', 'vent_lame', 'gen_effroi'], null), S('Maîtrise', 'Mains des morts', ['eye_spectre', 'spc_main', 'gen_miroirs', 'vent_croix'], 'spc_main'), S('Royaume des Morts', 'Absolu', ['spc_royaume', 'eye_spectre', 'spc_main', 'gen_miroirs', 'vent_faux'], 'spc_royaume', { aura: 'halo' })] },
+    divin: { n: 'Œil Divin', k: '神', c: '#ffd36b', stages: [S('Éveil', 'Puissance +20 %', ['eye_divin', 'spirale', 'onde', 'iryo_aura'], null), S('Maîtrise', 'Lances divines', ['eye_divin', 'div_lances', 'spirale', 'onde'], 'div_lances'), S('Œil Unique', 'Absolu', ['div_jugement', 'eye_divin', 'div_lances', 'rin_shinra', 'spirale'], 'div_jugement', { aura: 'halo' })] },
+  };
+  for (const k in NEW) { const m = NEW[k]; if (MODES[k]) continue;
+    MODES[k] = { n: m.n, k: m.k, c: m.c, kind: 'eye', s16: 1, stages: m.stages.map((s, i) => ({ n: s.n, sub: s.sub, skills: (s.sk || []).filter((id) => TECH[id]), ult: (s.ult && TECH[s.ult]) ? s.ult : ((s.sk || []).find((id) => TECH[id]) || null), req: 1, drain: +(2 + i * 0.5).toFixed(2), mul: +(1.1 + i * 0.1).toFixed(2) })) }; }
+  S2.port16 = { clans: ['akane', 'tokiwa', 'raiden', 'yurei', 'tenmei'].filter((c) => CLANS[c]), eyes: Object.keys(NEW).filter((k) => MODES[k]) };
+})();
+/* Mise à jour 16 — Arène des légendes (portée d’Éternel II) + raccourci « Modes créatifs » sur l’écran titre. */
+(function () {
+  const A = (S2.arena16 = { ev: {}, MS: {"naruto":{"n":"Naruto Uzumaki","k":"渦","c":"#ff8a2b","el":"vent","look":{"hair":"#f2c230","outfit":"#ff8a2b","scarf":"#1a2a5a","band":"#1a2a5a"},"sk":["spirale","nar_clones","vent_aiguilles","tai_ouragan","nar_rasenshuriken"],"ult":"nar_rasenshuriken","sword":0,"combo":"Combo de clones : chaque 3e coup, un clone frappe avec toi."},"sasuke":{"n":"Sasuke Uchiha","k":"鷹","c":"#5a6aa8","el":"foudre","look":{"hair":"#141420","outfit":"#e8e8f0","scarf":"#5a6aa8"},"sk":["foudre_lame","feu_boule","sas_nagashi","sas_kagutsuchi","foudre_chaine"],"ult":"sas_kirin","sword":1,"combo":"Lame de Kusanagi électrifiée : les coups paralysent brièvement."},"kakashi":{"n":"Kakashi Hatake","k":"案","c":"#c8d0dc","el":"foudre","look":{"hair":"#d8d8e0","outfit":"#3a4a3a","scarf":"#2a2a30","mask":1},"sk":["kak_raikiri","kak_ninken","eau_dragon","terre_mur","foudre_chaine"],"ult":"tob_kamui","sword":0,"combo":"Kunaï et coups rapides : le 4e coup copie le dernier élément reçu."},"itachi":{"n":"Itachi Uchiha","k":"鴉","c":"#d63c3c","el":"feu","look":{"hair":"#141420","outfit":"#121018","scarf":"#d63c3c"},"sk":["feu_boule","ita_corbeaux","gen_prison","ita_amaterasu"],"ult":"ita_tsukuyomi","sword":0,"combo":"Corbeaux : chaque coup a 15 % de chances de plonger la cible en transe."},"gaara":{"n":"Gaara","k":"愛","c":"#c9a46b","el":"terre","look":{"hair":"#a8321e","outfit":"#7a4a3a","scarf":"#c9a46b"},"sk":["gaa_cercueil","gaa_bouclier","gaa_tsunami","terre_lances"],"ult":"gaa_tsunami","sword":0,"combo":"Sable à distance : les coups frappent plus loin et ralentissent."},"deidara":{"n":"Deidara","k":"爆","c":"#ffe9a0","el":"explosion","look":{"hair":"#f2d870","outfit":"#121018","scarf":"#d63c3c"},"sk":["dei_c1","dei_c2","dei_c3","terre_mur"],"ult":"dei_c4","sword":0,"combo":"Argile : chaque coup laisse une micro-charge qui explose."},"minato":{"n":"Minato Namikaze","k":"閃","c":"#ffe23f","el":"foudre","look":{"hair":"#f2d870","outfit":"#e8e8f0","scarf":"#d63c3c"},"sk":["min_kunai","min_hiraishin","spirale","foudre_chaine"],"ult":"min_hiraishin","sword":0,"combo":"Chaque coup marque la cible pour le Dieu du Tonnerre Volant."},"pain":{"n":"Pain","k":"痛","c":"#b7a3ff","el":"gravite","look":{"hair":"#c86a2a","outfit":"#121018","scarf":"#d63c3c"},"sk":["pai_shinra","pai_bansho","pai_asura","pai_chemins"],"ult":"rin_chibaku","sword":0,"combo":"Tiges de chakra : les coups repoussent et saignent."},"madara":{"n":"Madara Uchiha","k":"斑","c":"#a8321e","el":"feu","look":{"hair":"#141420","outfit":"#7a1a1a","scarf":"#3a2a2a"},"sk":["feu_boule","mad_arbres","feu_dragon","ita_amaterasu"],"ult":"mad_meteore","sword":0,"combo":"Gunbai : coups larges qui repoussent."},"lee":{"n":"Rock Lee","k":"熱","c":"#3fae6a","el":"neutre","look":{"hair":"#0e0e14","outfit":"#3fae6a","scarf":"#ff8a2b"},"sk":["lee_lotus","gai_portes","gai_elephant","tai_ouragan","tai_cent"],"ult":"gai_paon","sword":0,"combo":"Taijutsu pur : coups +30 %, le combo projette plus loin."},"jiraiya":{"n":"Jiraiya","k":"蝦","c":"#e8e4dc","el":"feu","look":{"hair":"#f2f2f2","outfit":"#3a6a3a","scarf":"#d63c3c"},"sk":["jir_huile","jir_estomac","spirale","feu_boule"],"ult":"jir_huile","sword":0,"combo":"Cheveux-aiguilles : les coups blessent aussi derrière toi."},"obito":{"n":"Obito / Tobi","k":"面","c":"#ff9a2a","el":"feu","look":{"hair":"#141420","outfit":"#121018","scarf":"#ff9a2a","mask":1},"sk":["tob_kamui","feu_boule","mad_arbres","ita_corbeaux"],"ult":"tob_kamui","sword":0,"combo":"Intangible : 20 % de chances d’esquiver un coup en le traversant."},"kisame":{"n":"Kisame Hoshigaki","k":"鮫","c":"#3f6aa0","el":"eau","look":{"hair":"#3f6aa0","outfit":"#121018","scarf":"#d63c3c"},"sk":["kis_requins","eau_dragon","eau_vague","eau_requins"],"ult":"kis_prison","sword":1,"combo":"Samehada : chaque coup vole du chakra."},"orochimaru":{"n":"Orochimaru","k":"蛇","c":"#6a9a4a","el":"neutre","look":{"hair":"#0e0e14","outfit":"#e8e8f0","scarf":"#6a2a8a"},"sk":["oro_mains","oro_kusanagi","gen_effroi","vent_lame"],"ult":"oro_manda","sword":0,"combo":"Morsure de serpent : les coups empoisonnent."},"konan":{"n":"Konan","k":"紙","c":"#a090c8","el":"vent","look":{"hair":"#5a6aa8","outfit":"#121018","scarf":"#d63c3c"},"sk":["kon_papillons","vent_aiguilles","vent_lame","kon_mer"],"ult":"kon_mer","sword":0,"combo":"Papier tranchant : les coups font saigner."},"neji":{"n":"Neji Hyūga","k":"日","c":"#7ff0ff","el":"neutre","look":{"hair":"#2a1a10","outfit":"#e8e4dc","scarf":"#7ff0ff"},"sk":["nej_64","nej_kaiten","tai_paume","vent_percee"],"ult":"nej_64","sword":0,"combo":"Poing Souple : chaque coup ronge le chakra."},"tsunade":{"n":"Tsunade","k":"綱","c":"#7dffb0","el":"terre","look":{"hair":"#f2d870","outfit":"#3a6a3a","scarf":"#7dffb0"},"sk":["tsu_poing","iryo_paume","terre_poing","iryo_regen"],"ult":"tsu_byakugo","sword":0,"combo":"Force colossale : coups lents mais dévastateurs (+60 %, recul)."}} });
+  const LV = 8;
+  const prof = () => P();
+  const st = () => { const p = prof(); p.arena16 = p.arena16 || {}; return p.arena16; };
+  const kit = (k) => { const m = A.MS[k]; return m.sk.concat(m.ult ? [m.ult] : []).filter((id, i, a) => TECH[id] && a.indexOf(id) === i); };
+  for (const k in A.MS) { const m = A.MS[k]; const mv = kit(k); BOSSES['ar16_' + k] = { n: m.n, ai: 'boss', hp: 1500, spd: 210, dmg: 24, xp: 260, ryo: 180, mind: 0.8, skill: 0.85, size: 1.05, sword: m.sword ? 1 : 0, el: m.el, moves: mv.length ? mv : ['croissant'], look: m.look, arena16: 1 }; }
+  // les adversaires d'arène ne sortent pas en mission aléatoire ni dans le simulateur aléatoire
+  const bgm = genMission; genMission = function () { const m = bgm.apply(this, arguments); if (m && m.type === 'boss' && /^ar16_/.test(m.boss)) { const bl = Object.keys(BOSSES).filter((k) => !/^ar16_/.test(k)); m.boss = bl[(m.seed || 0) % bl.length]; m.title = BOSSES[m.boss].n + ' — ' + BIOMES[m.biome].n; } return m; };
+  A.start = function (k) {
+    const p = prof(); const m = genMission(p, mulberry32(hashStr(k + (st()[k] || 0))), { type: 'boss' }); m.boss = 'ar16_' + k; m.arena16 = k; m.title = 'Arène : ' + A.MS[k].n; m.mods = [];
+    A.ev.start = k; Session.team = [{ dev: 'kb1' }]; UI.modeAfter = { mode: 'farm', mission: m }; UI.launch();
+  };
+  const bem = endMission; endMission = function (win) {
+    try { const D = G.director; const k = D && D.m && D.m.arena16; if (k && win && !G.over) { const p = prof(); const s = st(); s[k] = (s[k] || 0) + 1; const got = [];
+      for (const id of kit(k)) if (!p.techs.includes(id)) { grantTech(p, TECH[id]); got.push(TECH[id].n); }
+      A.ev.win = k; Profile.save(); setTimeout(() => toast('Arène des légendes', A.MS[k].n + ' vaincu', got.length ? 'Techniques obtenues : ' + got.join(', ') : 'Revanche gagnée (maîtrise +).', A.MS[k].c, A.MS[k].k), 1800); } } catch (e) { console.warn('arena16', e.message); }
+    return bem.apply(this, arguments);
+  };
+  setInterval(() => { const D = G.director; if (!D || !D.m || !D.m.arena16 || G.over) return; for (const u of G.units) if (u.team === 1 && !u.boss && alive(u) && !u.summoned && !u.owner) { u.dead = true; u.hp = 0; } }, 200);
+  UI.tab_arene = function () {
+    const p = prof(); const s = st(); const lock = p.lv < LV;
+    $('#tabbody').innerHTML = `<section class="panel ar16"><h3>${seal('闘', '#ff6a5a')} Arène des légendes <small class="muted">${Object.keys(s).length}/${Object.keys(A.MS).length} vaincus</small></h3>
+      <p class="muted small">Duel 1 contre 1 face à une légende avec son vrai moveset. Victoire : tu apprends ses techniques (signature et ultime). ${lock ? '<b>Se débloque au niveau ' + LV + '.</b>' : ''}</p>
+      <div class="ar16g">${Object.entries(A.MS).map(([k, m]) => `<article style="--ac:${m.c}"><header><span class="k">${esc(m.k)}</span><div><b>${esc(m.n)}</b><small>${esc((EL[m.el] || EL.neutre).n)}${s[k] ? ' · vaincu ×' + s[k] : ''}</small></div></header>
+        <p>${kit(k).map((id) => `<span class="${p.techs.includes(id) ? 'own' : ''}">${esc(TECH[id].n)}</span>`).join('')}</p>${m.combo ? `<p class="small muted">${esc(m.combo)}</p>` : ''}
+        <button class="primary" data-ar16="${k}" ${lock ? 'disabled' : ''}>${s[k] ? 'Revanche' : 'Défier'}</button></article>`).join('')}</div></section>`;
+    $$('#tabbody [data-ar16]').forEach((b) => (b.onclick = () => A.start(b.dataset.ar16)));
+  };
+  // raccourci titre « Modes créatifs »
+  const bt = UI.title; UI.title = function () { const r = bt.apply(this, arguments); try { const cr = [...document.querySelectorAll('button')].find((b) => b.offsetParent && /Créatif/.test(b.textContent) && !/Modes créatifs/.test(b.textContent));
+      if (cr && !document.getElementById('cm16')) { const b = cr.cloneNode(true); b.id = 'cm16'; b.innerHTML = cr.innerHTML.replace(/Créatif/, 'Modes créatifs').replace(/Tout débloqué[^<]*/, 'Chocs, moveset, boss, labos'); cr.after(b);
+        b.onclick = () => { A.ev.cm = 1; cr.click(); setTimeout(() => { const s = document.getElementById('c44bj') || document.querySelector('#creative select'); const sec = s && (s.closest('section,details,.panel') || s); if (sec && sec.scrollIntoView) sec.scrollIntoView({ block: 'center' }); if (sec && sec.tagName === 'DETAILS') sec.open = true; }, 900); }; } } catch (e) { console.warn('cm16', e.message); } return r; };
+  const css = document.createElement('style'); css.textContent = `.ar16g{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+  .ar16g article{border:1px solid color-mix(in srgb,var(--ac) 50%,#2e2440);border-left:4px solid var(--ac);border-radius:10px;padding:10px 12px;background:rgba(20,14,30,.6);display:flex;flex-direction:column;gap:6px}
+  .ar16g header{display:flex;gap:10px;align-items:center}.ar16g .k{font:900 28px serif;color:var(--ac)}.ar16g header small{display:block;color:#a99cc0}
+  .ar16g p{margin:0;display:flex;flex-wrap:wrap;gap:4px}.ar16g p span{font-size:11px;border:1px solid #4a3c5c;border-radius:999px;padding:1px 7px;color:#d8cfe8}.ar16g p span.own{border-color:#5fe08a;color:#9ff0b8}`;
+  document.head.appendChild(css);
 })();
 /* Shinobi 2 v13 — signes des mains dessinés, auras de mode légères (orange bijū / violet pupilles), temps d’incantation partout,
    ennemis soumis aux mêmes règles (recharges, chakra, incantation) + IA plus fine, VFX allégés, XP ×5, moins de texte à l’écran */

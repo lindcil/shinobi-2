@@ -79,3 +79,13 @@ Tout se réaffecte dans **Options → Touches** (clic puis touche, échange auto
 - Bouton **忍 Ninjutsu** sur l’écran titre : toutes les techniques avec les filtres de Préparation (rôle : projectile, zone, mobilité, contrôle…, élément, rareté, techniques de mode / ultimes, type), recherche et tri, fiche détaillée.
 - Rencontres du monde ouvert : toutes au même taux.
 - XP ×5 (déjà actif depuis la mise à jour 13).
+
+## Mise à jour 16 — L’héritage d’Éternel
+- **Correctif** : la Préparation s’affichait vide dès qu’on possédait une technique de maître ou de personnage.
+- **Nouveaux clans** : Akane, Tokiwa, Raiden, Yūrei et Tenmei.
+- **Nouvelles pupilles** : 5 pupilles à 3 stades (Sang, Temps, Tempête, Spectral, Divin).
+- **Nouvelles techniques** : environ 75, dont 5 nouvelles lignées (Acier, Poussière, Cristal, Ébullition, Yin-Yang).
+- **Nouveaux adversaires** : 4 ennemis, 5 boss et 4 arènes.
+- **Arène des légendes** (nouvel onglet) : 17 légendes en duel 1 contre 1. Chaque victoire apprend les techniques de la légende.
+- **Écran titre** : raccourci « Modes créatifs ».
+- Le détail est dans AUDIT_S1_vs_S2.md.
