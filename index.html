@@ -2968,10 +2968,10 @@ function tryCast(u, id, ang, tgt) {
   if (u.clan === 'utsushi') { u.memory.push(id); if (u.memory.length > 6) u.memory.shift(); }
   if (u.team === 1 || u.st.charm > 0) G.lastEnemyTech = id;
   u.lastTech = id;
-  const seals = T.seals || 0; const ct = seals ? Math.max(0.14, seals * 0.07 * (1 - (u.voies?.ninjutsu || 0) * 0.015)) : 0.08;
+  const seals = T.seals || 0; const ct = seals ? Math.max(0.14, seals * 0.07 * (1 - (u.voies?.ninjutsu || 0) * 0.015)) : ((T.rar || 1) >= 4 || T.cost >= 30 ? 0.24 : (T.kind === 'dash' || T.kind === 'teleport') ? 0.09 : 0.13);
   u.castEl = T.el; u.aim = ang;
   if (Math.cos(ang) !== 0) u.face = Math.cos(ang) >= 0 ? 1 : -1;
-  if (T.kind === 'dash' || T.kind === 'teleport' || T.kind === 'launcher' || T.kind === 'barrage' || T.kind === 'buff' && !seals) { execTech(u, T, ang, tgt); return true; }
+  /* v13 : plus de lancement instantané */
   u.act = { type: 'cast', t: 0, dur: ct + 0.12, fireAt: ct, T, ang, tgt, fired: false, seals };
   u.pose = T.cat === 'outil' ? 'throw' : 'seal'; u.poseT = 0;
   // les signes s'affichent au-dessus de la tête (09h) ; ici seulement le claquement des mains
@@ -5793,7 +5793,6 @@ function aiUpdate(u, dt) {
         let pool = MOB_JUTSU[u.jutsuEl] || MOB_JUTSU.feu; let id = pick(pool);
         if (tgt.st.wet > 0 && u.jutsuEl !== 'foudre' && Math.random() < 0.5) id = 'foudre_chaine';
         const incoming = G.projs.filter((p) => p.team !== u.team && dist2(p.x, p.y, u.x, u.y) < 260 * 260).length; if (incoming >= 2 && Math.random() < 0.6) id = 'terre_mur';
-        u.ch = u.maxCh; u.cds[id] = 0;
         if (tryCast(u, id, u.aim, tgt)) { ai.castCd = G.t + rand(3, 5) - u.tier * 0.2; FX.text(u.x, u.y - 85, '!', '#ffb13d', 22); bark(u, TECH[id].n + ' !', 0.35); }
       }
       break;
@@ -5855,7 +5854,7 @@ function aiUpdate(u, dt) {
     }
     case 'monk': {
       if (d > 60) moveTo(u, tgt.x, tgt.y); else if ((ai.atkCd || 0) < G.t) { startMelee(u); ai.atkCd = G.t + rand(0.35, 0.6); }
-      if ((ai.castCd || 0) < G.t && d < 100) { ai.castCd = G.t + rand(5, 7); u.ch = u.maxCh; u.cds.tai_ouragan = 0; tryCast(u, 'tai_ouragan', u.aim, tgt); }
+      if ((ai.castCd || 0) < G.t && d < 100) { ai.castCd = G.t + rand(5, 7); tryCast(u, 'tai_ouragan', u.aim, tgt); }
       break;
     }
     case 'boss': return aiBoss(u, tgt, d, dt);
@@ -5879,7 +5878,7 @@ function aiBoss(u, tgt, d, dt) {
       if (!alive(u) || unitDisabled(u)) return; const t2 = alive(tgt) ? tgt : nearestEnemy(u, 900); if (!t2) return; const a = angTo(u, t2);
       if (mv === 'puppets') { for (let i = 0; i < 3; i++) spawnSummon(u, 'puppet', u.x + rand(-60, 60), u.y + rand(-60, 60), 18); return; }
       if (mv === 'slam') { const R = 140; u.act = { type: 'slam', t: 0, dur: 1, hitAt: 0.8, x: u.x, y: u.y, r: R, mul: 2.2, el: u.el }; G.warns.push({ x: u.x, y: u.y, r: R, t: 0.8, max: 0.8, c: '#ff6a2b' }); return; }
-      const id = BOSS_TECH[mv] || (TECH[mv] ? mv : null); if (!id) return; u.cds[id] = 0; u.ch = u.maxCh; execTech(u, TECH[id], a, t2);
+      const id = BOSS_TECH[mv] || (TECH[mv] ? mv : null); if (!id) return; if ((u.cds[id] || 0) > 0 || u.ch < techCost(u, TECH[id])) { ai.castCd = G.t + 0.5; return; } u.ch -= techCost(u, TECH[id]); u.cds[id] = TECH[id].cd; execTech(u, TECH[id], a, t2);
       if (mv === 'lame_vent' || mv === 'croissant') { G.delayed.push({ t: 0.35, f: () => alive(u) && execTech(u, TECH[id], angTo(u, t2) + 0.25, t2) }); G.delayed.push({ t: 0.7, f: () => alive(u) && execTech(u, TECH[id], angTo(u, t2) - 0.25, t2) }); }
     } });
   }
@@ -5901,8 +5900,8 @@ function aiBeastBoss(u, tgt, d, dt) {
   switch (mv) {
     case 'slam': { const R = 190; u.act = { type: 'slam', t: 0, dur: 1.2, hitAt: 0.95, x: u.x, y: u.y, r: R, mul: 2, el: u.el }; G.warns.push({ x: u.x, y: u.y, r: R, t: 0.95, max: 0.95, c: u.col2 }); break; }
     case 'charge': { const L = 520; G.warns.push({ line: 1, x: u.x, y: u.y, x2: u.x + Math.cos(a) * L, y2: u.y + Math.sin(a) * L, w: 90, t: 0.75, max: 0.75, c: u.col2 }); u.act = { type: 'channel', t: 0, dur: 0.75 }; u.pose = 'charge'; G.delayed.push({ t: 0.75, f: () => { if (!alive(u)) return; u.act = { type: 'techdash', t: 0, dur: 0.32, T: { w: 90, dmg: u.dmgBase * 2.2, el: u.el, st: { knockup: 1 }, id: 'charge' }, ang: a, pw: u.atk, hit: new Set() }; u.vx = Math.cos(a) * L / 0.32; u.vy = Math.sin(a) * L / 0.32; Audio.play('roar'); Cam.add(0.6); } }); break; }
-    case 'orbe': { u.cds.bete_orbe = 0; u.ch = 999; execTech(u, Object.assign({}, TECH.bete_orbe, { dmg: 110, delay: 1.2, w: 80, rng: 900 }), a, tgt); break; }
-    default: { const list = BEAST_MOVES[u.el] || BEAST_MOVES.feu; const id = mv === 'elem2' ? list[1] : list[0]; u.ch = 999; u.cds[id] = 0; FX.glow(u.x, u.y, 60 * u.size, u.col2, 90, 0.5); u.act = { type: 'channel', t: 0, dur: 0.5 }; u.pose = 'cast'; G.delayed.push({ t: 0.5, f: () => alive(u) && execTech(u, TECH[id], angTo(u, tgt), tgt) }); }
+    case 'orbe': { if ((u.cds.bete_orbe || 0) > 0) { ai.castCd = G.t + 0.4; break; } u.cds.bete_orbe = 14; execTech(u, Object.assign({}, TECH.bete_orbe, { dmg: 110, delay: 1.2, w: 80, rng: 900 }), a, tgt); break; }
+    default: { const list = BEAST_MOVES[u.el] || BEAST_MOVES.feu; const id = mv === 'elem2' ? list[1] : list[0]; if ((u.cds[id] || 0) > 0) { ai.castCd = G.t + 0.4; break; } u.cds[id] = TECH[id] ? TECH[id].cd : 6; FX.glow(u.x, u.y, 60 * u.size, u.col2, 90, 0.5); u.act = { type: 'channel', t: 0, dur: 0.5 }; u.pose = 'cast'; G.delayed.push({ t: 0.5, f: () => alive(u) && execTech(u, TECH[id], angTo(u, tgt), tgt) }); }
   }
 }
 
@@ -7372,12 +7371,12 @@ function cloakBones(ctx, u, c, eye) {
   drawUnit = function (ctx, gl, u) {
     const st = beastCloak(u); if (!st || u.alpha < 0.15) return baseUnit(ctx, gl, u);
     const E = EL[(BEASTS.find((b) => b.id === u.beast) || {}).el] || EL.feu; const bub = 1.18 + Math.sin(G.t * 9) * 0.025;
-    if (st === 'chakra') { cloakPass(ctx, gl, u, u.tailC || E.c, bub, 0.34); const r = baseUnit(ctx, gl, u); if (Math.random() < 0.5 * FX.quality) FX.add({ type: 'glow', x: u.x + rand(-16, 16), y: u.y, z: rand(10, 60), vz: rand(40, 90), c: u.tailC || E.c, size: rand(6, 11), life: 0.4, a: 0.7 }); return r; }
-    if (st === 'abyssal') { cloakPass(ctx, gl, u, '#ff2a1a', bub + 0.02, 0.75); const r = baseUnit(ctx, gl, u); cloakPass(ctx, gl, u, '#0c0106', 1.04, 0.96); cloakBones(ctx, u, 'rgba(255,236,236,0.8)', '#ffffff'); return r; }
+    if (st === 'chakra') { cloakPass(ctx, gl, u, '#ff9a3c', bub, 0.2); const r = baseUnit(ctx, gl, u); if (Math.random() < 0.5 * FX.quality) FX.add({ type: 'glow', x: u.x + rand(-16, 16), y: u.y, z: rand(10, 60), vz: rand(40, 90), c: u.tailC || E.c, size: rand(6, 11), life: 0.4, a: 0.7 }); return r; }
+    if (st === 'abyssal') { cloakPass(ctx, gl, u, '#ff9a3c', bub + 0.02, 0.3); const r = baseUnit(ctx, gl, u); cloakPass(ctx, gl, u, '#8a4410', 1.04, 0.22); cloakBones(ctx, u, 'rgba(255,236,236,0.8)', '#ffffff'); return r; }
     // écarlate : manteau rouge sang, os à vif, aura de flammes rouges
-    cloakPass(ctx, gl, u, '#ff3b1f', bub + 0.06, 0.6); gl.globalAlpha = 0.55; gl.drawImage(FX.glowSprite('#ff2a1a'), u.x - 60, u.y - u.z - 100, 120, 120); gl.globalAlpha = 1;
-    const r = baseUnit(ctx, gl, u); cloakPass(ctx, gl, u, '#6a0610', 1.05, 0.88); cloakBones(ctx, u, '#ffd0c0', '#ffffff');
-    if (Math.random() < 0.7 * FX.quality) FX.add({ type: 'ember', x: u.x + rand(-18, 18), y: u.y, z: rand(10, 70), vz: rand(80, 160), c: pick(['#ff3b1f', '#ff8a3d', '#ffd27a']), size: rand(2, 5), life: 0.5 });
+    cloakPass(ctx, gl, u, '#ffa040', bub + 0.06, 0.32); gl.globalAlpha = 0.16; gl.drawImage(FX.glowSprite('#ff9a3c'), u.x - 60, u.y - u.z - 100, 120, 120); gl.globalAlpha = 1;
+    const r = baseUnit(ctx, gl, u); cloakPass(ctx, gl, u, '#b8581a', 1.05, 0.2); cloakBones(ctx, u, '#ffd0c0', '#ffffff');
+    if (Math.random() < 0.15 * FX.quality) FX.add({ type: 'ember', x: u.x + rand(-18, 18), y: u.y, z: rand(10, 70), vz: rand(80, 160), c: pick(['#ff3b1f', '#ff8a3d', '#ffd27a']), size: rand(2, 5), life: 0.5 });
     return r;
   };
 })();
@@ -11018,6 +11017,57 @@ function techCard2(id, p, opts = {}) {
   S2.rf = () => { try { const p = Profile.data; return !p || !p.settings || p.settings.rf2 !== false; } catch (e) { return true; } };
   S2.alive = (v) => v && !v.dead && v.hp > 0;
 })();
+/* Signes des mains (mudras) dessinés : 12 signes du zodiaque, deux mains, pictogrammes vectoriels. Partagé Shinobi 1 / Shinobi 2. */
+(function () {
+  // repère : boîte 40×40 centrée (0,0), y vers le bas. P = paume [cx, cy, w, h, angle], F = doigt [x1, y1, x2, y2, épaisseur]
+  const L = (pal, fing) => ({ pal, fing });
+  const S = {
+    // 子 Rat : main droite index+majeur levés, tenus dans le poing gauche
+    0: [L([[-3, 8, 14, 13, -0.1], [4, 6, 13, 14, 0.15]], [[2, 0, 2, -17, 3.6], [5.5, 0, 6, -15, 3.6], [-9, 4, -2, 2, 3.4], [-9, 8, -1, 6, 3.4], [-8, 12, 0, 10, 3.4]])],
+    // 丑 Bœuf : index+majeur gauches levés, main droite à plat en travers
+    1: [L([[-5, 6, 12, 14, 0], [5, 4, 16, 9, 0.05]], [[-8, -1, -8, -16, 3.4], [-4.5, -1, -4.5, -17, 3.4], [-3, 3, 14, 2, 3.2], [-3, 7, 14, 6, 3.2]])],
+    // 寅 Tigre : mains jointes, index+majeurs des deux mains levés et collés
+    2: [L([[-5, 8, 11, 15, 0.08], [5, 8, 11, 15, -0.08]], [[-2.2, 0, -2.2, -18, 3.4], [2.2, 0, 2.2, -18, 3.4], [-5.8, 1, -5.6, -16, 3.2], [5.8, 1, 5.6, -16, 3.2], [-9, 7, -3, 5, 3], [9, 7, 3, 5, 3]])],
+    // 卯 Lièvre : main gauche à plat verticale, main droite poing contre la paume
+    3: [L([[-5, 0, 9, 22, 0], [6, 6, 13, 12, 0]], [[-7, -10, -7, -19, 3.2], [-4, -10, -4, -20, 3.2], [3, 1, 12, 1, 3.4], [3, 5, 12, 5, 3.4], [3, 9, 11, 9, 3.4]])],
+    // 辰 Dragon : doigts entrelacés, pouces joints pointés vers le haut
+    4: [L([[0, 6, 22, 14, 0]], [[-1.6, -1, -1.6, -13, 3.4], [1.6, -1, 1.6, -13, 3.4], [-10, 1, 10, 3, 2.8], [-10, 5, 10, 7, 2.8], [10, 1, -10, 3, 2.8], [10, 5, -10, 7, 2.8]])],
+    // 巳 Serpent : mains serrées, doigts entrelacés à plat
+    5: [L([[0, 4, 24, 16, 0]], [[-12, -2, 8, -2, 3], [12, 1, -8, 1, 3], [-12, 4, 8, 4, 3], [12, 7, -8, 7, 3], [-12, 10, 8, 10, 3], [0, -4, 0, -10, 3.6]])],
+    // 午 Cheval : index et pouces formant un triangle pointe en haut
+    6: [L([[-8, 9, 11, 12, 0.3], [8, 9, 11, 12, -0.3]], [[-6, 3, -0.8, -16, 3.4], [6, 3, 0.8, -16, 3.4], [-5, 2, -0.6, -2, 3.2], [5, 2, 0.6, -2, 3.2]])],
+    // 未 Bélier : index+majeur gauches levés, main droite enveloppe (index+majeur levés derrière)
+    7: [L([[-2, 8, 13, 14, 0], [3, 7, 14, 13, 0]], [[-4, 0, -4, -17, 3.4], [-0.5, 0, -0.5, -18, 3.4], [4, 0, 4, -13, 3.2], [7.5, 1, 7.5, -12, 3.2], [-8, 9, 8, 9, 3]])],
+    // 申 Singe : paumes l’une sur l’autre, doigts tendus
+    8: [L([[0, 6, 12, 18, 0]], [[-4.5, -2, -4.5, -18, 3.2], [-1.5, -3, -1.5, -19, 3.2], [1.5, -3, 1.5, -19, 3.2], [4.5, -2, 4.5, -18, 3.2], [-5, 6, 7, 2, 3.4]])],
+    // 酉 Oiseau : bouts des doigts joints, pouces écartés en ailes
+    9: [L([[-7, 6, 10, 14, 0.4], [7, 6, 10, 14, -0.4]], [[-5, -1, 0, -15, 3.2], [5, -1, 0, -15, 3.2], [-10, 4, -17, -3, 3.2], [10, 4, 17, -3, 3.2]])],
+    // 戌 Chien : main droite à plat posée sur le poing gauche
+    10: [L([[0, 9, 14, 12, 0], [0, 0, 22, 7, 0]], [[-11, 0, 11, 0, 3.6], [-4, 8, 4, 8, 3.4], [-5, 12, 5, 12, 3.4]])],
+    // 亥 Sanglier : paumes vers le bas, bouts des doigts joints
+    11: [L([[-7, 4, 13, 10, 0.1], [7, 4, 13, 10, -0.1]], [[-1, 0, -12, 0, 3], [1, 0, 12, 0, 3], [-1, 4, -13, 5, 3], [1, 4, 13, 5, 3], [-1, 8, -12, 9, 3], [1, 8, 12, 9, 3]])],
+  };
+  const NAMES = ['Ne', 'Ushi', 'Tora', 'U', 'Tatsu', 'Mi', 'Uma', 'Hitsuji', 'Saru', 'Tori', 'Inu', 'I'];
+  const SKIN = '#f3d6b6', SH = '#d9b08a', OUT = '#2a1a14';
+  function rrect(c, cx, cy, w, h, a) { c.save(); c.translate(cx, cy); c.rotate(a || 0); const r = Math.min(w, h) * 0.42; c.beginPath(); c.moveTo(-w / 2 + r, -h / 2); c.arcTo(w / 2, -h / 2, w / 2, h / 2, r); c.arcTo(w / 2, h / 2, -w / 2, h / 2, r); c.arcTo(-w / 2, h / 2, -w / 2, -h / 2, r); c.arcTo(-w / 2, -h / 2, w / 2, -h / 2, r); c.closePath(); c.fill(); c.stroke(); c.restore(); }
+  function cap(c, x1, y1, x2, y2, t) { c.lineWidth = t + 1.6; c.strokeStyle = OUT; c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke(); c.lineWidth = t; c.strokeStyle = SKIN; c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke(); }
+  // dessine le signe idx (0..11) centré en (x, y), taille px ; col : couleur du halo ; a : opacité ; pop : 0..1 (échelle d’apparition)
+  function draw(c, x, y, size, idx, col, a, pop) {
+    const D = S[((idx % 12) + 12) % 12][0]; const k = (size / 40) * (pop == null ? 1 : 0.7 + 0.3 * pop);
+    c.save(); c.globalAlpha = a == null ? 1 : a; c.translate(x, y);
+    // médaillon discret
+    c.fillStyle = 'rgba(12,8,20,0.55)'; c.beginPath(); c.arc(0, 0, size * 0.62, 0, Math.PI * 2); c.fill();
+    if (col) { c.strokeStyle = col; c.lineWidth = 1.6; c.globalAlpha *= 0.85; c.stroke(); c.globalAlpha = a == null ? 1 : a; }
+    c.scale(k, k); c.lineCap = 'round'; c.lineJoin = 'round';
+    c.fillStyle = SKIN; c.strokeStyle = OUT; c.lineWidth = 1.4;
+    for (const p of D.pal) rrect(c, p[0], p[1], p[2], p[3], p[4]);
+    for (const f of D.fing) cap(c, f[0], f[1], f[2], f[3], f[4]);
+    // ombre de jointure
+    c.strokeStyle = SH; c.lineWidth = 1; c.globalAlpha *= 0.7; c.beginPath(); c.moveTo(0, -2); c.lineTo(0, 12); c.stroke();
+    c.restore();
+  }
+  window.HandSigns = { draw, NAMES, n: 12 };
+})();
 /* Rig v4.6 d'Éternel II : squelette hiérarchique FK + IK 2 os, UNE seule orientation pour tout le corps.
    Les poses (12 principes / ZZZ) de Shinobi 2 sont conservées : le nouveau rig lit les cibles de ninjaPose et le ressort stx/sty. */
 (function () {
@@ -11635,7 +11685,7 @@ function techCard2(id, p, opts = {}) {
     add(5, 'sus_poing_' + e); add(6, 'sus_magatama_' + e); add(6, 'sus_fleche_' + e); add(7, 'sus_fleche_' + e); add(7, 'sus_magatama_' + e);
   }
   const susLv = (u) => { const m = u && u.mode; if (!m || !['solaire', 'lunaire', 'miroir'].includes(m.id)) return 0; return m.stage >= 8 ? 4 : m.stage >= 6 ? m.stage - 4 : m.stage === 5 ? 1 : 0; };
-  const susC = (u) => ({ solaire: '#ff5a3a', lunaire: '#9a5aff', miroir: '#5ad8ff' }[u.mode && u.mode.id] || '#b06aff');
+  const susC = (u) => ({ solaire: '#c07cff', lunaire: '#9a5aff', miroir: '#a88cff' }[u.mode && u.mode.id] || '#b06aff');
   SE36.susLv = susLv;
   const bd = dealDamage; dealDamage = function (src, tgt, b, o = {}) { const sl = susLv(tgt); if (sl) { arguments[2] = b * (1 - [0, 0.25, 0.35, 0.45, 0.55][sl]); } return bd.apply(this, arguments); };
   function drawSus(ctx, u, lv) {
@@ -12512,6 +12562,70 @@ for (const k of ['celeste', 'miroir', 'neant', 'solaire', 'lunaire', 'anneaux', 
   const beg = UI.enterGame; UI.enterGame = function () { wipe(); return beg.apply(this, arguments); };
   // Raccourci : Échap ferme aussi la constellation (déjà), Maj+? ouvre le Guide
   S2.note('crea', '#7ab8ff', 'Créatif+ et confort', 'Panneau Créatif : choc de Bijūdama, Mode Jinchūriki par bijū, toutes les pupilles et modes appris à n’importe quel stade, simulateur de boss, labo des réactions, labo des ultimes/secrètes/spéciales, créateur de moveset (sauvegarde + simulation contre l’IA), maîtrise maximale. Confort : C maintenu + E/F monte au stade max, transitions à l’encre entre écrans et onglets.');
+})();
+/* Shinobi 2 v13 — signes des mains dessinés, auras de mode légères (orange bijū / violet pupilles), temps d’incantation partout,
+   ennemis soumis aux mêmes règles (recharges, chakra, incantation) + IA plus fine, VFX allégés, XP ×5, moins de texte à l’écran */
+(function () {
+  const V = (S2.v13 = { ev: {} });
+  const ORANGE = '#ff9a3c', PURPLE = '#b47cff';
+  // ---------- Couleurs de mode ----------
+  const kindOf = (u) => (u && u.mode && MODES[u.mode.id] ? MODES[u.mode.id].kind : null);
+  const bmc = modeColor; modeColor = function (u) { const k = kindOf(u); if (k === 'beast') return ORANGE; if (k === 'eye') return PURPLE; return bmc.apply(this, arguments); };
+  V.modeColor = (u) => modeColor(u);
+  // aura discrète derrière le corps
+  const bdu = drawUnit; drawUnit = function (ctx, gl, u) { try { const k = kindOf(u); if (k && !u.dead && u.alpha > 0.15) { const c = k === 'beast' ? ORANGE : k === 'eye' ? PURPLE : modeColor(u); const s = Math.max(1, u.size || 1); const pul = 0.14 + Math.sin(G.t * 3) * 0.03;
+        gl.globalAlpha = pul; gl.drawImage(FX.glowSprite(c), u.x - 40 * s, u.y - (u.z || 0) - 92 * s, 80 * s, 100 * s); gl.globalAlpha = 1;
+        ctx.strokeStyle = rgba(c, 0.35); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(u.x, u.y, 24 * s, 9 * s, 0, 0, TAU); ctx.stroke(); } } catch (e) {} return bdu.apply(this, arguments); };
+  // couleurs des tails/manteaux du bijū : orange
+  const bem = enterMode; enterMode = function (u, id) { const r = bem.apply(this, arguments); try { if (u && MODES[id] && MODES[id].kind === 'beast') { u.tailC = ORANGE; u.tailC2 = '#ffd9a8'; } } catch (e) {} return r; };
+  // ---------- Signes des mains au-dessus de la tête (aucun texte) ----------
+  drawSeals = function (ctx, gl, u) {
+    const a = u.act; if (!a || a.type !== 'cast' || !a.T || !a.seals || u.alpha < 0.3 || a.fired) return; const T = a.T;
+    const n = Math.min(6, a.seals); const seq = a.seq || (a.seq = sealSeq(T, n)); const per = Math.max(0.03, a.fireAt / n); const cur = Math.min(n - 1, Math.floor(a.t / per));
+    const k = clamp((a.t - cur * per) / per, 0, 1); const pop = ease.out3(Math.min(1, k * 3));
+    const top = (u._top || u.y - 70 * (u.size || 1)) - (isLocalHuman(u) ? 72 : 34) - (u.z || 0); const S = isLocalHuman(u) ? 30 : 22;
+    const c = kindOf(u) === 'beast' ? ORANGE : kindOf(u) === 'eye' ? PURPLE : (EL[T.el] || EL.neutre).c;
+    HandSigns.draw(ctx, u.x, top, S, seq[cur], c, 0.95, pop);
+    // petits points de progression
+    ctx.save(); for (let i = 0; i < n; i++) { ctx.fillStyle = i <= cur ? c : 'rgba(255,255,255,0.25)'; ctx.beginPath(); ctx.arc(u.x + (i - (n - 1) / 2) * 6, top + S * 0.72, 1.8, 0, TAU); ctx.fill(); } ctx.restore();
+    V.ev.sign = (V.ev.sign || 0) + 1; V.ev.lastSign = HandSigns.NAMES[seq[cur] % 12];
+  };
+  // toute technique de chakra (hors outils/taijutsu/kenjutsu) affiche au moins un signe
+  for (const T of Object.values(TECH)) if (!T.seals && !['outil', 'taijutsu', 'kenjutsu'].includes(T.cat) && T.kind !== 'dash' && !T.beast) T.seals = (T.rar || 1) >= 4 ? 2 : 1;
+  // ---------- Ennemis : chakra réel, régénération, mêmes coûts ----------
+  const bsm = spawnMob; spawnMob = function () { const u = bsm.apply(this, arguments); try { if (u) { u.maxCh = Math.max(u.maxCh || 0, u.boss ? 300 : 140); u.ch = u.maxCh; u.cds = u.cds || {}; if (u.dashMax == null || u.dashMax < 1) { u.dashMax = u.boss || u.elite ? 2 : 1; u.dashCh = u.dashMax; } } } catch (e) {} return u; };
+  // ---------- IA plus fine ----------
+  const bai = aiUpdate; aiUpdate = function (u, dt) {
+    const r = bai.apply(this, arguments);
+    try {
+      if (!u.ai || u.team === 0 || u.ai.type === 'shinobi' || u.ai.type === 'decoy' || unitDisabled(u)) return r;
+      if (u.ch < u.maxCh) u.ch = Math.min(u.maxCh, u.ch + (u.boss ? 16 : 10) * dt);
+      const ai = u.ai, t = ai.target && alive(ai.target) ? ai.target : null; if (!t || u.act) return r; const d = dist(u.x, u.y, t.x, t.y);
+      const canDash = (u.dashCh || 0) > 0 && (ai.dashT || 0) < G.t; const smart = u.boss || u.elite || (u.skill || 0) > 0.3;
+      // punir une incantation ou un temps de récupération
+      if (smart && canDash && t.act && (t.act.type === 'cast' || t.act.type === 'chargeorb') && d < 300 && d > 70) { ai.dashT = G.t + 2.2; startDash(u, Math.atan2(t.y - u.y, t.x - u.x)); G.delayed.push({ t: 0.18, f: () => { if (alive(u) && !u.act) startMelee(u); } }); V.ev.punish = (V.ev.punish || 0) + 1; return r; }
+      // rapprochement par esquive pour les corps-à-corps
+      if (['brute', 'beast', 'samurai', 'monk', 'assassin', 'boss', 'beast_boss'].includes(ai.type) && canDash && d > 230 && d < 420 && Math.random() < dt * 0.9) { ai.dashT = G.t + 3; startDash(u, Math.atan2(t.y - u.y, t.x - u.x)); V.ev.gap = (V.ev.gap || 0) + 1; return r; }
+      // esquive latérale des projectiles et zones (élite/boss)
+      if (smart && canDash) { for (const p of G.projs) { if (p.team === u.team) continue; const dx = u.x - p.x, dy = u.y - p.y, dd = Math.hypot(dx, dy); if (dd > 160 || dd < 8) continue; const sp = Math.hypot(p.vx, p.vy) || 1; if ((dx * p.vx + dy * p.vy) / (dd * sp) < 0.85) continue; ai.dashT = G.t + 1.6; startDash(u, Math.atan2(p.vy, p.vx) + (Math.random() < 0.5 ? 1 : -1) * Math.PI / 2); V.ev.dodge = (V.ev.dodge || 0) + 1; return r; } }
+      // à distance : se replier après une attaque (frapper et reculer)
+      if ((ai.type === 'ranged' || ai.type === 'caster') && canDash && d < 110 && Math.random() < dt * 2) { ai.dashT = G.t + 2.5; startDash(u, Math.atan2(u.y - t.y, u.x - t.x) + rand(-0.5, 0.5)); }
+    } catch (e) {}
+    return r; };
+  // ---------- XP ×5 ----------
+  const bgx = grantXP; grantXP = function (p, xp) { return bgx.call(this, p, (xp || 0) * 5); };
+  // ---------- Moins de texte, VFX plus propres ----------
+  const bb = bark; bark = function (u) { if (!u || !u.boss) return; return bb.apply(this, arguments); };
+  let tq = []; const bt = FX.text.bind(FX);
+  const USELESS = /^(Bloqué|Absorbé|Libéré|Parade !|Contre !|Esquive|Dans le dos !|Katsu !|Yeah !|!)$/;
+  FX.text = function (x, y, txt, c, size, crit, life) { const s = String(txt); const num = /^[-+]?\d/.test(s);
+    if (!num && USELESS.test(s)) return; const now = performance.now(); tq = tq.filter((t) => now - t < 600);
+    if (!num && !crit && (tq.length >= 3 || s.length > 22)) return; if (!num) tq.push(now); return bt(x, y, txt, c, size, crit, life); };
+  const bk = FX.kanji.bind(FX); let kn = 0; FX.kanji = function (x, y, z, txt, c, size) { if ((size || 28) < 40 && (kn++ % 2)) return; return bk.apply(null, arguments); };
+  const ba = FX.add.bind(FX); const LIGHT = { spark: 0.5, glow: 0.45, ember: 0.35, debris: 0.5, smoke: 0.5, leaf: 0.5 };
+  FX.add = function (o) { const k = o && LIGHT[o.type]; if (k && Math.random() < k) return null; if (o && o.type === 'glow' && o.a == null) o.a = 0.7; return ba(o); };
+  const bban = banner; banner = function (title, sub, c, small) { return bban.call(this, title, sub, c, small && String(small).length < 40 ? small : undefined); };
+  S2.note('v13', '#b47cff', 'Signes des mains, auras, IA, confort', 'Les signes sont de vrais mudras dessinés (deux mains) au-dessus de la tête, sans texte. Auras de mode plus légères : orange pour les bijū, violet pour les pupilles. Toute technique a un court temps d’incantation. Les ennemis paient chakra et recharges comme toi, esquivent, punissent tes incantations et se rapprochent par ruée. XP ×5, deux fois moins de texte à l’écran, effets visuels allégés.');
 })();
 /* Shinobi 2 — Constellations uniques par technique (port Éternel II v4.5, formes thématiques) */
 (function(){
