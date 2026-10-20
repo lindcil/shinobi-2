@@ -13544,6 +13544,9 @@ for (const k of ['celeste', 'miroir', 'neant', 'solaire', 'lunaire', 'anneaux', 
       const allDown = H.every((u) => u.dead || u.down);
       const res = vis(document.getElementById('scr-results'));
       if (res) { addRetry(); downT = overT = 0; return; }
+      const dlgOn = () => { const d = document.getElementById('dlg'); return !!(d && d.classList.contains('on')); };
+      if (allDown && !world() && G.mode !== 'pvp' && dlgOn()) { D.ev.dlgSkip = (D.ev.dlgSkip || 0) + 1; for (let i = 0; i < 20 && dlgOn(); i++) { try { if (typeof Dlg !== 'undefined' && Dlg.finish) Dlg.finish(); else document.querySelector('#dlg .dlgskip').click(); } catch (e) { break; } } const d = document.getElementById('dlg'); if (d) d.classList.remove('on'); G.paused = false; }
+      if (allDown && dlgOn() === false && G.paused && !world() && !document.querySelector('#pause:not([hidden]),#scr-pause:not([hidden])')) downT += dt; else
       if (allDown && (!G.paused || world())) downT += dt; else if (!allDown) downT = 0;
       if (world() && allDown && downT > 2.2) { for (const u of H) D.respawn(u); downT = 0; return; }
       if (G.mode === 'creative' && allDown && downT > 2.2 && !window.SIM48_ACTIVE) { for (const u of H) { if (typeof reviveUnit === 'function') reviveUnit(u, 1); u.dead = u.down = false; u.hp = u.maxHp; } downT = 0; return; }
@@ -13588,7 +13591,7 @@ for (const k of ['celeste', 'miroir', 'neant', 'solaire', 'lunaire', 'anneaux', 
       set: (c) => { const L = plainTechs(); return [0, 1, 2, 3].map((i) => `<label>Technique ${i + 1}<select data-c="sk${i}">${L.map((k) => opt(k, TN(k), k === c['sk' + i])).join('')}</select></label>`).join('') + diffSel(c); } },
     boss: { n: 'Simulateur de boss', k: '鬼', goal: 'Affronte le boss de ton choix au rang choisi. Victoire quand il tombe, défaite si tu tombes. Le chrono est affiché à la fin.', keys: () => KEYS.move,
       set: (c) => `<label>Boss<select data-c="boss">${Object.keys(BOS()).map((k) => opt(k, BN(k), k === c.boss)).join('')}</select></label><label>Rang<select data-c="tier">${[0, 1, 2, 3, 4, 5].map((t) => opt(t, 'Rang ' + (t + 1), +c.tier === t)).join('')}</select></label>` },
-    labo: { n: 'Labo libre', k: '創', goal: 'Bac à sable : invoque ennemis et mannequins, triches, techniques, pupilles et bêtes. Les outils du labo s’affichent ici quand une session est en cours (Tab pour revenir à ce panneau).', keys: () => `${KEYS.move} · ${K('Tab')} panneau Créatif`,
+    labo: { n: 'Labo libre', k: '創', goal: 'Bac à sable : invoque ennemis et mannequins, triches, techniques, pupilles et bêtes. Les outils du labo s’affichent ici quand une session est en cours (Tab pour revenir à ce panneau).', keys: () => KEYS.move,
       set: (c) => `<label>Terrain<select data-c="biome">${Object.keys(BIO()).map((b) => opt(b, (BIO()[b] && BIO()[b].n) || b, b === c.biome)).join('')}</select></label><div id="ch49tools"></div>` },
     mastery: { n: 'Éditeur de maîtrise', k: '極', editor: 1, goal: 'Règle la maîtrise (0 à V) de tes techniques. Modifie ton profil réel.', keys: () => 'Souris / clavier',
       set: () => `<div class="r"><input id="ch49q" placeholder="Rechercher une technique…"><button data-x="m5">Tout en Maîtrise V</button><button data-x="m0">Tout à 0</button></div><div id="ch49m"></div>` },
