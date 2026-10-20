@@ -1,13 +1,3 @@
-## Mise à jour 13 — Signes, auras, temps d'incantation, IA
-
-- **Mudras dessinés** : chaque signe est une vraie position de deux mains, affichée brièvement au-dessus de la tête du lanceur, sans texte. Toute technique de chakra a au moins un signe.
-- **Auras de mode** plus légères et codées par couleur : orange pour les modes bête et jinchūriki, violet pour les dōjutsu (Sharingan, Rinnegan…, Susanoo compris).
-- **Temps d'incantation pour tout** : plus aucun lancer instantané (environ 0,09 s pour les déplacements, 0,13 s pour les techniques légères, 0,24 s pour les lourdes).
-- **Ennemis et boss** : plus de triche. Ils ont de vrais temps de recharge, payent le chakra (qui se régénère) et ont les mêmes temps d'incantation que toi.
-- **IA plus fine** : les ennemis rapprochent les distances en esquivant, punissent tes incantations (ruée suivie d'un coup), esquivent latéralement les projectiles, et ceux à distance frappent puis reculent.
-- **Plus simple** : XP ×5.
-- **Plus minimaliste** : environ moitié moins de texte à l'écran (seuls les boss parlent, textes inutiles supprimés, bannières courtes) et effets visuels allégés (35 à 50 % de particules en moins).
-
 # Shinobi 2 — Mise à jour 7
 - Nouveau rig squelettique (FK + IK), pieds/genoux toujours orientés vers le regard (630 cas vérifiés en 8 directions).
 - Smears ZZZ en croissant, couleur du personnage, 4–5 images, plus grands sur les finishers.
@@ -44,3 +34,13 @@
 # Shinobi 2 — Mise à jour 12 : Créatif+ & confort
 - Panneau Créatif : choc de Bijūdama (ton bijū contre un autre), Mode Jinchūriki par bijū, toutes les pupilles et modes appris à n’importe quel stade, simulateur de boss (rangs 1/3/5), labo des réactions (triples, quadruples, quintuple, dōjutsu), labo des ultimes/secrètes/spéciales, créateur de moveset (4 techniques + ultime, sauvegarde, simulation contre l’IA), maîtrise maximale + tout débloquer.
 - Confort : C maintenu + E (pupille) ou F (bijū) monte directement au stade maximal accessible ; transitions à l’encre entre écrans, animation des onglets (réduite si « réduire les animations » est actif dans le système).
+
+# Shinobi 2 — Mise à jour 13 : Signes, auras, temps d'incantation, IA
+
+- **Mudras dessinés** : chaque signe est une vraie position de deux mains, affichée brièvement au-dessus de la tête du lanceur, sans texte. Toute technique de chakra a au moins un signe.
+- **Auras de mode** plus légères et codées par couleur : orange pour les modes bête et jinchūriki, violet pour les dōjutsu (Sharingan, Rinnegan…, Susanoo compris).
+- **Temps d'incantation pour tout** : plus aucun lancer instantané (environ 0,09 s pour les déplacements, 0,13 s pour les techniques légères, 0,24 s pour les lourdes).
+- **Ennemis et boss** : plus de triche. Ils ont de vrais temps de recharge, payent le chakra (qui se régénère) et ont les mêmes temps d'incantation que toi.
+- **IA plus fine** : les ennemis rapprochent les distances en esquivant, punissent tes incantations (ruée suivie d'un coup), esquivent latéralement les projectiles, et ceux à distance frappent puis reculent.
+- **Plus simple** : XP ×5.
+- **Plus minimaliste** : environ moitié moins de texte à l'écran (seuls les boss parlent, textes inutiles supprimés, bannières courtes) et effets visuels allégés (35 à 50 % de particules en moins).
