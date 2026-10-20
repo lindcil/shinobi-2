@@ -19,3 +19,9 @@
 - Pupilles renommées : Sharingan (Amaterasu, Tsukuyomi, Kamui), Byakugan, Rinnegan, Rinne-Sharingan. Stades : 1 à 3 tomoe, Mangekyō, Susanoo (cage thoracique, squelette), Mangekyō Éternel, Susanoo parfait. Techniques canon renommées (Amaterasu, Kagutsuchi, Kamui, Shinra Tensei, Chibaku Tensei, Kaiten, 64/128 Points…).
 - Susanoo dessiné autour du personnage aux stades 5 à 8, avec −25/−35/−45/−55 % de dégâts reçus. Nouvelles techniques : Poing du Susanoo, Yasaka no Magatama, Flèche du Susanoo.
 - Ultimes en duo : ton ultime lancé près d’un allié déclenche une attaque combinée (Rasengan × Chidori, Susanoo des Frères, Bijūdama Jumelle, Lions Jumeaux × Rasengan, 10 fusions élémentaires). Recharge 25 s.
+
+# Shinobi 2 — Mise à jour 10 : Spéciales Hiruzen, Asuma, Naruto, Sasuke
+- 28 techniques canon : Hiruzen (Shuriken Kage Bunshin, Karyū Endan, Doryūheki, Roi Enma, Shiki Fūjin), Asuma (lames de chakra, Haisekishō, Hien, Danse des lames), Naruto (lancer de clone, Uzumaki Rendan, recharge par clones, Avatar de Kurama, Rasengan planétaire, Rasenshuriken à queues, Rasengan nucléaire), Sasuke (Flèche d’Indra, Flèche des neuf Bijū, Lame Chidori du Susanoo, Armure de Kagutsuchi, Flèches Chidori), plus Itachi (Totsuka, Yata), Madara (Météore, Tranchant parfait) et Kakashi (Shuriken Kamui).
+- Les ultimes Susanoo s’ajoutent aux stades 7–8 des Sharingan ; ceux de Naruto au Mode Chakra du Bijū.
+- Cinématique façon Bijūdama (assombrissement → impact → onde de choc), adoucie avec « Réduire les flashs ».
+- Non repris : sceaux/fusions et chocs QTE d’Éternel (Shinobi 2 a déjà les siens).

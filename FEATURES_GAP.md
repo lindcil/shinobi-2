@@ -18,6 +18,7 @@ Modes à stades (Bête + manteaux, pupilles solaire/lunaire/céleste/miroir/néa
 | 63 techniques secrètes canon (moteur ext33) | porté v8 (défis d’Arène remplacés par éliminations/réactions) | src/51_secrets.js |
 | Susanoo 4 stades + noms canon des pupilles | porté v9 (fusionné avec l’armure spectrale des stades 5–8) | src/52_susanoo.js |
 | Ultimes en duo | porté v9 (sans QTE : déclenchement automatique près d’un allié) | src/52_susanoo.js |
+| Spéciales Hiruzen/Asuma/Naruto/Sasuke/Itachi/Madara/Kakashi (28) | porté v10 | src/53_specials.js |
 
 ## Manquant → NON porté (prévu : l’utilisateur a validé les noms canon) (pour l’instant)
 | Système | Raison |
