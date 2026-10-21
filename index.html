@@ -11859,7 +11859,7 @@ function techCard2(id, p, opts = {}) {
       FX.ring(x, y, E.c, 20, 320, 0.6, 14); FX.kanji(x, y, 160, '双', E.c, 70, 1.2); G.hitStop = Math.max(G.hitStop, 0.12); Cam.add(1.2); Post.shock(x, y, 2, 600); Audio.play('boom', 1.5); SE36.ev.duo = D.n; } }); }
   SE36.duoFx = duo;
   const btc = tryCast; tryCast = function (u, id, a, tgt) { const r = btc.apply(this, arguments);
-    try { if (r !== false && u && u.isPlayer && !(u.denyFx && u.denyFx.t === G.t) && id && id === ultOf(u) && G.mode !== 'pvp' && !(u._duoCd > G.t)) { const al = allyFor(u); const fo = tgt && alive(tgt) ? tgt : enemiesOf(u).sort((p, q) => dist(u.x, u.y, p.x, p.y) - dist(u.x, u.y, q.x, q.y))[0]; if (al && fo) { u._duoCd = G.t + 25; duo(u, al, fo, duoOf(u, al)); } } } catch (e) { console.warn('duo', e.message); }
+    try { if (r !== false && u && u.isPlayer && !(u.denyFx && u.denyFx.t === G.t) && id && id === ultOf(u) && G.mode !== 'pvp' && !(u._duoCd > G.t)) { const al = allyFor(u); const fo = tgt && alive(tgt) ? tgt : enemiesOf(u).sort((p, q) => dist(u.x, u.y, p.x, p.y) - dist(u.x, u.y, q.x, q.y))[0]; if (al && fo) { u._duoCd = G.t + 25; duo(u, al, fo, (SE36.duoOf || duoOf)(u, al)); } } } catch (e) { console.warn('duo', e.message); }
     return r; };
   S2.note('sus', '#9a5aff', 'Susanoo et noms canon des pupilles', 'Les pupilles à tomoe deviennent Sharingan (Amaterasu, Tsukuyomi, Kamui), Mangekyō, Mangekyō Éternel. L’armure spectrale devient le Susanoo en 4 stades (cage, squelette, humanoïde, parfait) : −25 à −55 % de dégâts, Poing, Magatama, Flèche, Lame de Totsuka. Byakugan, Rinnegan et Rinne-Sharingan prennent leur nom.');
   S2.note('duo', '#ffd27a', 'Ultimes en duo', 'Lance ton ultime près d’un allié : attaque combinée cinématique (Rasengan × Chidori, Susanoo des Frères, Bijūdama Jumelle, Lions Jumeaux × Rasengan, et 10 fusions élémentaires). Recharge 25 s.');
@@ -13615,6 +13615,75 @@ for (const k of ['celeste', 'miroir', 'neant', 'solaire', 'lunaire', 'anneaux', 
   X.cst = cst(); setTimeout(() => { X.cst += cst(); }, 1500);
   S2.note('m21', '#c06bff', 'MAJ 21 — Jūbi & Edo Tensei', 'Jūbi jouable (Mode Jinchūriki d’Obito) : bats Obito, jinchūriki du Jūbi, en monde ouvert pour le sceller. Madara Edo avec son kit de la Saga (Tengai Shinsei, Susanoo parfait, Jukai Kōtan). Rencontres : Kage réanimés et Sept Épéistes de la Brume (6 épéistes ajoutés au roster Edo Tensei). Susanoo : réduction de dégâts 20/30/38/48 % selon le stade, les coups spectraux la traversent à moitié. Constellations générées pour toutes les nouvelles techniques.');
 })();
+/* Shinobi 2 — MAJ 22 : arc « Pain contre Konoha », éditeur de duo (Créatif), préréglages de loadout, chocs plus riches. */
+(function () {
+  if (window.S2M22) return; const X = (window.S2M22 = { ev: {} }); const V = S2.v14;
+  /* ---------- 1. Arc : Pain contre Konoha ---------- */
+  try {
+    Object.assign(CAST, {
+      pain: { n: 'Pain (Tendō)', c: '#ff7a2a', look: { skin: '#f0d8c0', hair: '#ff7a2a', hs: 3, outfit: '#121018', scarf: '#c02a2a', akatsuki: 1 }, sword: 0 },
+      asura: { n: 'Voie Asura', c: '#8a8a9a', look: { skin: '#e0c8b0', hair: '#c06a2a', hs: 2, outfit: '#121018', scarf: '#c02a2a' }, sword: 0 },
+      preta: { n: 'Voie Preta', c: '#8a8a9a', look: { skin: '#e8d0b8', hair: '#3a2a1a', hs: 1, outfit: '#121018', scarf: '#c02a2a' }, sword: 0 },
+      animal: { n: 'Voie Animale', c: '#8a8a9a', look: { skin: '#f0d8c8', hair: '#ff8a3a', hs: 1, outfit: '#121018', scarf: '#c02a2a' }, sword: 0 },
+      konan: { n: 'Konan', c: '#7a6aff', look: { skin: '#f2e0d0', hair: '#5a4aaa', hs: 1, outfit: '#121018', scarf: '#c02a2a' }, sword: 0 },
+      kakashi: { n: 'Kakashi Hatake', c: '#c8d0dc', look: { skin: '#f0d0b0', hair: '#e8e8ec', hs: 4, outfit: '#2a3a2a', scarf: '#4a5a3a', mask: 1 }, sword: 0 },
+    });
+    if (!STORY_CH.some((c) => c.id === 'ch7')) STORY_CH.push({ id: 'ch7', n: 'Pain contre Konoha', k: '痛', c: '#ff7a2a', biome: 'village', lv: 22, minT: 3, size: [2100, 1500],
+      pitch: 'Les Six Voies de Pain attaquent Konoha. Repousse-les, puis affronte Tendō avant le Shinra Tensei.', stars: ['Vaincre Tendō', 'Sans tomber à terre', 'En moins de 4 min'] });
+    const rinClan = () => CLAN_ORDER.find((c) => CLANS[c].eye === 'neant') || CLAN_ORDER[0];
+    const kit = (u, ids) => { const k = ids.filter((id) => TECH[id]); if (k.length) u.slots = k.concat(u.slots || []).slice(0, 4); };
+    STORY_SCRIPTS.ch7 = function (D, p) {
+      const M = G.map; const cx = M.w / 2, cy = M.h / 2; const me = G.players[0]; me.x = cx - 280; me.y = cy + 80; me.face = 1; const pl = Math.max(p.lv, 22);
+      const ally = storyShinobi('kakashi', CLAN_ORDER.find((c) => CLANS[c].el === 'foudre') || CLAN_ORDER[0], pl, 0, 1.4); ally.x = cx - 320; ally.y = cy - 40; ally.ally = 1; addUnit(ally);
+      let paths = []; let pain = null; let pushT = 10;
+      const shinra = (D) => { if (!pain || !alive(pain)) return; for (const v of G.units) { if (!alive(v) || v.team === pain.team) continue; const d = dist(v.x, v.y, pain.x, pain.y); if (d < 380) { dealDamage(pain, v, 26 * (1 + D.tier * 0.25), { kb: 1100, kbA: Math.atan2(v.y - pain.y, v.x - pain.x), tech: 'pai_shinra' }); } }
+        try { FX.ring(pain.x, pain.y, '#c8b0ff', 20, 380, 0.6, 14); FX.kanji(pain.x, pain.y, 150, '神', '#c8b0ff', 60, 1); Cam.add(0.8); Post.shock(pain.x, pain.y, 1.4, 500); Audio.play('boom', 1.2); } catch (e) { } Dlg.radio('pain', pick(['Shinra Tensei.', 'Ressens la douleur.', 'Le monde connaîtra la douleur.'])); };
+      return [
+        S_.say([['narr', 'Konoha. Un silence étrange, puis des bêtes géantes dans les rues.'], ['kakashi', '{n}, les Six Voies de Pain. Elles partagent la même vue : ne te laisse pas encercler.'], ['pain', 'Konoha. Ressens la douleur.']]),
+        S_.run((D) => { D.obj = 'Repousse les Voies de Pain'; D.tStart = D.elapsed; const ids = ['asura', 'preta', 'animal'];
+          ids.forEach((id, i) => { const u = storyShinobi(id, rinClan(), pl, 1, 1.5 + D.tier * 0.3); u.x = cx + 160 + i * 90; u.y = cy - 120 + i * 120; u.face = -1; kit(u, id === 'asura' ? ['terre_boulet', 'kunai_ex'] : id === 'preta' ? ['rin_gudo'] : ['kak_ninken']); u.edo = false; addUnit(u); paths.push(u); }); banner('Les Six Voies', 'PAIN CONTRE KONOHA', '#ff7a2a'); }),
+        S_.until(() => paths.every((u) => !alive(u))),
+        S_.say([['konan', 'Nagato… ils résistent.'], ['pain', 'Alors je vais leur montrer le vrai pouvoir d’un dieu.'], ['kakashi', 'Il repousse tout autour de lui, puis il lui faut cinq secondes. Frappe dans cet intervalle !']]),
+        S_.run((D) => { pain = storyShinobi('pain', rinClan(), 50, 1, 1); pain.maxHp = (230 + pl * 14) * (4 + D.tier * 0.5); pain.hp = pain.maxHp; pain.atk = 1 + pl * 0.05; pain.boss = true; pain.hpFloor = 0.1; pain.x = cx + 260; pain.y = cy - 30; pain.face = -1; pain.eye = 'neant'; kit(pain, ['pai_shinra', 'rin_chibaku', 'rin_shinra']); addUnit(pain); D.pain = pain;
+          pain.onFloor = () => { D.flags.end = 1; pain.untargetable = true; pain.ai = null; pain.act = null; for (const v of G.units) if (v.team === 1 && v !== pain && alive(v)) killUnit(v, null); G.projs = G.projs.filter((q) => q.team !== 1); };
+          D.obj = 'Vaincs Tendō'; banner('Pain — Tendō', 'VOIE DES DIEUX', '#c8b0ff'); }),
+        S_.until((D) => { pushT -= D.dt; if (pushT <= 0) { pushT = Math.max(7, 12 - D.tier); shinra(D); } return D.flags.end; }),
+        S_.run((D) => { D.time = D.elapsed - D.tStart; G.slowT = 2; G.slowS = 0.3; banner('Tendō tombe', '', '#ffd27a'); }),
+        S_.wait(1),
+        S_.say([['narr', 'Le corps de Tendō s’effondre. Quelque part, un homme décharné relâche ses câbles noirs.'], ['konan', 'Nagato… tu as perdu ?'], ['kakashi', 'Konoha est debout, {n}. Grâce à toi.']]),
+        S_.run((D) => { D.stars = [1, D.downs === 0, D.time <= 240]; }),
+        S_.win(),
+      ]; };
+  } catch (e) { console.warn('m22 arc', e); }
+  /* ---------- 2. Éditeur de duo (Créatif) ---------- */
+  const cfg = () => { const p = P(); if (!p) return null; p.duo22 = p.duo22 || { ally: 'sasuke', n: 'Rasengan × Chidori', el: 'foudre' }; return p.duo22; };
+  try { const bd = SE36.duoOf; SE36.duoOf = function (a, b) { const c = cfg(); if (c && (a._duo22 || b._duo22)) return { n: c.n, d: 'Duo personnalisé', el: c.el }; return bd.apply(this, arguments); };
+    // le hook d’ultime appelle duoOf par sa référence locale : on rattrape via le duo en cours
+    const bfx = SE36.duoFx; if (bfx) SE36.duoFx = function (u, al, fo, D) { const c = cfg(); if (c && (u._duo22 || (al && al._duo22))) D = { n: c.n, d: 'Duo personnalisé', el: c.el }; return bfx.call(this, u, al, fo, D); }; } catch (e) { }
+  X.summon = function () { const c = cfg(); if (!c || !G.mode) return null; const u = V.summon(c.ally, true); if (u) { u._duo22 = 1; u.name = (u.name || '') + ' · Duo'; X.ev.summon = (X.ev.summon || 0) + 1; } return u; };
+  const ui = document.createElement('div'); ui.id = 'duo22'; ui.hidden = true; document.body.appendChild(ui);
+  X.open = function () { const c = cfg(); if (!c) return; const els = Object.keys(EL).filter((k) => EL[k] && EL[k].n);
+    ui.innerHTML = `<div class="w"><h2>双 Éditeur de duo</h2><label>Partenaire<select id="d22a">${V.ROSTER.map((r) => `<option value="${r.id}" ${r.id === c.ally ? 'selected' : ''}>${esc(r.n)}</option>`).join('')}</select></label>
+      <label>Nom de l’ultime en duo<input id="d22n" maxlength="40" value="${esc(c.n)}"></label><label>Élément<select id="d22e">${els.map((k) => `<option value="${k}" ${k === c.el ? 'selected' : ''}>${esc(EL[k].n)}</option>`).join('')}</select></label>
+      <p class="h">Lance ton ultime près de ton partenaire pour déclencher le duo.</p><div class="r"><button class="p" id="d22s">Enregistrer</button><button id="d22g" ${G.mode ? '' : 'disabled'}>Invoquer le partenaire</button><button id="d22x">Fermer (Échap)</button></div></div>`;
+    ui.hidden = false; const save = () => { c.ally = $('#d22a').value; c.n = ($('#d22n').value || 'Assaut Combiné').slice(0, 40); c.el = $('#d22e').value; Profile.save(); };
+    $('#d22s').onclick = () => { save(); X.close(); }; $('#d22g').onclick = () => { save(); X.close(); X.summon(); }; $('#d22x').onclick = X.close; X.ev.open = (X.ev.open || 0) + 1; };
+  X.close = () => { ui.hidden = true; };
+  addEventListener('keydown', (e) => { if (!ui.hidden && e.code === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); X.close(); } }, true);
+  // bouton dans le panneau du Mode Créatif
+  setInterval(() => { try { const h = document.getElementById('ch49'); if (!h || h.hidden) return; const nav = h.querySelector('nav'); if (nav && !nav.querySelector('#d22b')) { nav.insertAdjacentHTML('beforeend', '<button id="d22b"><i>双</i>Éditeur de duo</button>'); nav.querySelector('#d22b').onclick = () => X.open(); } } catch (e) { } }, 400);
+  /* ---------- 3. Préréglages de loadout ---------- */
+  try { const bp = UI.tab_prep; UI.tab_prep = function () { const r = bp.apply(this, arguments); try { const p = P(); p.load22 = p.load22 || [null, null, null]; const tb = $('#tabbody'); if (!tb || tb.querySelector('.ld22')) return r;
+      const card = (L, i) => `<div class="ld"><b>Préréglage ${i + 1}</b><small>${L ? esc((CLANS[L.clan] || {}).n || '') + ' · ' + L.slots.filter(Boolean).map((s) => esc((TECH[s] || {}).n || s)).slice(0, 4).join(', ') : 'vide'}</small><span><button data-ls="${i}">Enregistrer</button><button data-ll="${i}" ${L ? '' : 'disabled'}>Charger</button></span></div>`;
+      tb.insertAdjacentHTML('afterbegin', `<section class="panel ld22"><h3>預 Préréglages de loadout</h3><div class="lds">${p.load22.map(card).join('')}</div></section>`);
+      tb.querySelectorAll('[data-ls]').forEach((b) => (b.onclick = () => { p.load22[+b.dataset.ls] = { clan: p.clan, slots: (p.slots || []).slice(), elements: (p.elements || []).slice(), eye: p.eye || null, beastEq: p.beastEq || null }; Profile.save(); X.ev.saved = (X.ev.saved || 0) + 1; this.tab_prep(); }));
+      tb.querySelectorAll('[data-ll]').forEach((b) => (b.onclick = () => { const L = p.load22[+b.dataset.ll]; if (!L) return; if (CLANS[L.clan] && (!p.clans || p.clans.includes(L.clan))) p.clan = L.clan; p.slots = L.slots.map((s) => (s && (p.techs || []).includes(s) ? s : null)); while (p.slots.length < 8) p.slots.push(null); p.elements = L.elements.slice(); p.eye = L.eye && (p.eyes || []).includes(L.eye) ? L.eye : p.eye; p.beastEq = L.beastEq && (p.beasts || []).includes(L.beastEq) ? L.beastEq : p.beastEq; Profile.save(); X.ev.loaded = (X.ev.loaded || 0) + 1; this.tab_prep(); }));
+    } catch (e) { console.warn('ld22', e); } return r; }; } catch (e) { }
+  const css = document.createElement('style'); css.textContent = `#duo22{position:fixed;inset:0;z-index:9700;display:flex;align-items:center;justify-content:center;background:rgba(8,4,14,.7)}#duo22[hidden]{display:none}#duo22 .w{width:min(460px,92vw);background:linear-gradient(180deg,#2a1838,#120a1c);border:2px solid #ffd27a;border-radius:16px;padding:18px;color:#f4eee4;font-family:system-ui,sans-serif;box-shadow:0 0 30px rgba(192,107,255,.4)}#duo22 h2{margin:0 0 10px;color:#ffd27a}#duo22 label{display:block;margin:8px 0}#duo22 select,#duo22 input{width:100%;box-sizing:border-box;padding:7px;border-radius:8px;border:1px solid #6a4a8a;background:#140f1c;color:#fff;margin-top:4px}#duo22 .h{color:#cbbfe0;font-size:13px}#duo22 .r{display:flex;gap:8px;flex-wrap:wrap}#duo22 button{padding:8px 12px;border-radius:8px;border:1px solid #ffd27a;background:#1a1024;color:#fff;cursor:pointer}#duo22 .p{background:linear-gradient(180deg,#ffd27a,#e0902a);color:#201028;font-weight:700}
+.ld22 .lds{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}.ld22 .ld{border:1px solid rgba(255,210,122,.4);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:4px}.ld22 .ld small{opacity:.75}.ld22 .ld span{display:flex;gap:6px}`;
+  document.head.appendChild(css);
+  S2.note('m22', '#ff7a2a', 'MAJ 22 — Pain contre Konoha', 'Histoire, chapitre 7 « Pain contre Konoha » : Kakashi à tes côtés, trois Voies de Pain puis Tendō et son Shinra Tensei (repousse tout, 5 s de répit pour frapper). Créatif : éditeur de duo (partenaire, nom et élément de l’ultime en duo, invocation du partenaire). Préparation : 3 préréglages de loadout. Chocs : feux follets en orbite, éclats tournoyants et fissures au sol.');
+})();
 /* Shinobi 2 — Constellations uniques par technique (port Éternel II v4.5, formes thématiques) */
 (function(){
   const hash = (s) => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
@@ -14040,6 +14109,10 @@ for (const k of ['celeste', 'miroir', 'neant', 'solaire', 'lunaire', 'anneaux', 
       const sr = (lq ? 8 : 26) * dt * (0.6 + I); for (let k = 0; k < sr; k++) for (const [S, col, sg] of [[P.A, C.ca, 1], [P.B, C.cb, -1]]) emit({ k: 'stream', sx: S.x, sy: S.y, ex: P.x, ey: P.y, ph: rnd(0, TAU), sg, z: C.z, c: col, s: rnd(2, 4), life: rnd(0.35, 0.6), amp: rnd(14, 34) * (0.6 + I) });
       // poussière et débris au sol
       if (Math.random() < (lq ? 0.25 : 0.7) * (0.4 + I)) { const a = rnd(0, TAU); emit({ k: Math.random() < 0.3 ? 'rock' : 'dust', x: P.x + Math.cos(a) * rnd(10, 60), y: P.y + Math.sin(a) * rnd(6, 26), z: 0, vx: Math.cos(a) * rnd(60, 260), vy: Math.sin(a) * rnd(30, 110), vz: rnd(60, 300), g: 900, c: '#8b7a66', s: rnd(4, 12), life: rnd(0.5, 1) }); }
+      // v2 : feux follets en orbite, éclats tournoyants, fissures au sol
+      if (Math.random() < (lq ? 0.35 : 1) * (0.5 + I)) emit({ k: 'orbit', x: P.x, y: P.y, z: C.z, a: rnd(0, TAU), r0: 60 + 70 * I, c: Math.random() < 0.5 ? C.ca : C.cb, s: rnd(2, 4.2), life: rnd(0.5, 0.9), sp: rnd(5, 9) * (Math.random() < 0.5 ? 1 : -1) });
+      if (Math.random() < (lq ? 0.08 : 0.28) * I) { const a = rnd(0, TAU), s = rnd(160, 420); emit({ k: 'shard', x: P.x, y: P.y, z: C.z, vx: Math.cos(a) * s, vy: Math.sin(a) * s * 0.7, vz: rnd(80, 300), g: 520, c: Math.random() < 0.5 ? C.ca : C.cb, s: rnd(5, 10), life: rnd(0.5, 0.8), rot: rnd(0, TAU), vr: rnd(-14, 14) }); }
+      if (I > 0.6 && !C.crack) { C.crack = 1; for (let k = 0; k < (lq ? 4 : 8); k++) emit({ k: 'crack', x: P.x, y: P.y, z: 0, a: k / (lq ? 4 : 8) * TAU + rnd(-0.3, 0.3), len: rnd(50, 130), j: rnd(0, 1000), life: 2.2, c: '#1a120c' }); }
       // anneaux pulsés
       C.ring += dt * (1.4 + I * 2.2); if (C.ring >= 1) { C.ring -= 1; emit({ k: 'ring', x: P.x, y: P.y, z: C.z, c: Math.random() < 0.5 ? C.ca : C.cb, r0: 14, r1: 90 + 120 * I, w: 3 + 4 * I, life: 0.45 }); }
       // cœur du contact : deux demi-halos colorés qui se repoussent
@@ -14053,6 +14126,8 @@ for (const k of ['celeste', 'miroir', 'neant', 'solaire', 'lunaire', 'anneaux', 
     ctx.save(); for (let i = live.length - 1; i >= 0; i--) { const p = live[i]; p.t += dt; if (p.t >= p.life) { live[i] = live[live.length - 1]; live.pop(); put(p); continue; } const q = p.t / p.life, al = 1 - q;
       if (p.k === 'stream') { const e = q * q * (3 - 2 * q); const x = p.sx + (p.ex - p.sx) * e, y = p.sy + (p.ey - p.sy) * e; const sw = Math.sin(p.ph + q * 9) * p.amp * (1 - e) * p.sg; const ang = Math.atan2(p.ey - p.sy, p.ex - p.sx) + Math.PI / 2; const [a, b, zm] = scr(x + Math.cos(ang) * sw, y + Math.sin(ang) * sw * 0.6, p.z * (0.6 + 0.4 * e));
         ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = hex(p.c, 0.75 * Math.sin(q * Math.PI)); ctx.beginPath(); ctx.arc(a, b, p.s * zm * 1.4, 0, TAU); ctx.fill(); continue; }
+      if (p.k === 'orbit') { const rr = p.r0 * (1 - q * 0.85), an = p.a + p.sp * p.t; const [a, b, zm] = scr(p.x + Math.cos(an) * rr, p.y + Math.sin(an) * rr * 0.55, p.z + Math.sin(an * 2) * 8); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = hex(p.c, 0.8 * Math.sin(q * Math.PI)); ctx.beginPath(); ctx.arc(a, b, p.s * zm, 0, TAU); ctx.fill(); continue; }
+      if (p.k === 'crack') { const [a, b, zm] = scr(p.x, p.y, 0); const L = p.len * Math.min(1, q * 5) * zm; ctx.globalCompositeOperation = 'source-over'; ctx.strokeStyle = hex(p.c, 0.55 * Math.min(1, (1 - q) * 2)); ctx.lineWidth = 2.4 * zm; ctx.beginPath(); ctx.moveTo(a, b); let x = a, y = b; for (let j = 1; j <= 4; j++) { const an = p.a + Math.sin(p.j + j * 1.7) * 0.45; x = a + Math.cos(an) * L * j / 4; y = b + Math.sin(an) * L * j / 4 * 0.55; ctx.lineTo(x, y); } ctx.stroke(); continue; }
       if (p.k === 'ring' || p.k === 'glow') { const e = 1 - Math.pow(1 - q, 3); const r = p.r0 + (p.r1 - p.r0) * e; const [a, b, zm] = scr(p.x, p.y, p.z);
         if (p.k === 'glow') { ctx.globalCompositeOperation = 'lighter'; const g = ctx.createRadialGradient(a, b, 0, a, b, r * zm); g.addColorStop(0, hex(p.c, (soft ? 0.4 : 0.8) * al)); g.addColorStop(1, hex(p.c, 0)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(a, b, r * zm, 0, TAU); ctx.fill(); continue; }
         ctx.globalCompositeOperation = 'source-over'; ctx.strokeStyle = hex(p.c, 0.85 * al); ctx.lineWidth = Math.max(1, p.w * al * zm); ctx.beginPath(); ctx.ellipse(a, b, r * zm, r * zm * (p.flat ? 0.35 : 0.62), 0, 0, TAU); ctx.stroke(); continue; }
@@ -14060,6 +14135,7 @@ for (const k of ['celeste', 'miroir', 'neant', 'solaire', 'lunaire', 'anneaux', 
       const [a, b, zm] = scr(p.x, p.y, p.z);
       if (p.k === 'dust') { ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = hex(p.c, 0.2 * al); ctx.beginPath(); ctx.arc(a, b, p.s * zm * (1 + q * 0.6), 0, TAU); ctx.fill(); continue; }
       if (p.k === 'rock') { ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = hex('#4a3e34', al); ctx.fillRect(a - p.s * zm * 0.3, b - p.s * zm * 0.3, p.s * zm * 0.6, p.s * zm * 0.6); continue; }
+      if (p.k === 'shard') { p.rot += p.vr * dt; ctx.globalCompositeOperation = 'lighter'; ctx.save(); ctx.translate(a, b); ctx.rotate(p.rot); ctx.fillStyle = hex(p.c, al); const z2 = p.s * zm; ctx.beginPath(); ctx.moveTo(0, -z2); ctx.lineTo(z2 * 0.45, z2 * 0.6); ctx.lineTo(-z2 * 0.45, z2 * 0.6); ctx.closePath(); ctx.fill(); ctx.restore(); continue; }
       ctx.globalCompositeOperation = 'lighter'; if (p.k === 'spark') { const [c2, d2] = scr(p.x - p.vx * 0.03, p.y - p.vy * 0.03, p.z - p.vz * 0.03); ctx.strokeStyle = hex(p.c, al); ctx.lineWidth = p.s * zm * 0.7; ctx.beginPath(); ctx.moveTo(c2, d2); ctx.lineTo(a, b); ctx.stroke(); }
       else { ctx.fillStyle = hex(p.c, al); ctx.beginPath(); ctx.arc(a, b, p.s * zm * (1 - q * 0.5), 0, TAU); ctx.fill(); } }
     ctx.restore();
