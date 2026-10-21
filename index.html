@@ -11186,11 +11186,16 @@ function techCard2(id, p, opts = {}) {
   const hook = () => { if (typeof aiUpdate !== 'function' || aiUpdate.__tac) return; const up = aiUpdate;
     aiUpdate = function (u, dt) { const ai = u && u.ai; const had = ai && ai.target; const r = up.apply(this, arguments);
       try { if (!ai || ai.type === 'decoy' || ai.leader) return r; const tgt = ai.target;
-        if (tgt && !had && !ai.alerted && G && G.units) { ai.alerted = 1; let n = 0; for (const o of G.units) { if (n >= 4) break; if (o === u || !o.ai || o.team !== u.team || o.ai.target || !alive(o)) continue; if (Math.hypot(o.x - u.x, o.y - u.y) < 360) { o.ai.target = tgt; o.ai.alerted = 1; o.ai.lastSeen = { x: tgt.x, y: tgt.y, t: G.t }; n++; } } if (n) bark(u, 'spot', 0.8); }
-        if (tgt && !u.boss && ai.type !== 'beast' && !ai.retreated && u.hp > 0 && u.hp / u.maxHp < 0.25) { ai.retreated = G.t + 1.6; bark(u, 'lost', 0.6); }
+        if (tgt && !had && !ai.alerted && G && G.units) { ai.alerted = 1; let n = 0; for (const o of G.units) { if (n >= 4) break; if (o === u || !o.ai || o.team !== u.team || o.ai.target || !alive(o)) continue; if (Math.hypot(o.x - u.x, o.y - u.y) < 360) { o.ai.target = tgt; o.ai.alerted = 1; o.ai.lastSeen = { x: tgt.x, y: tgt.y, t: G.t }; n++; } } if (n) { bark(u, 'spot', 0.8); u._tacCue = { k: 0, t: G.t + 1.4 }; } }
+        if (tgt && !u.boss && ai.type !== 'beast' && !ai.retreated && u.hp > 0 && u.hp / u.maxHp < 0.25) { ai.retreated = G.t + 1.6; bark(u, 'lost', 0.6); u._tacCue = { k: 1, t: G.t + 1.6 }; }
         if (tgt && ai.retreated && G.t < ai.retreated && !u.act) moveAway(u, tgt.x, tgt.y, 1); } catch (e) { }
       return r; }; aiUpdate.__tac = 1; };
-  hook(); addEventListener('load', hook);
+  const hookD = () => { if (typeof drawUnit !== 'function' || drawUnit.__tac) return; const d0 = drawUnit;
+    drawUnit = function (ctx, gl, u) { const r = d0.apply(this, arguments); try { const c = u && u._tacCue; if (c && G.t < c.t && u.hp > 0) { const s = u.size || 1, x = u.x, y = u.y - 78 * s - Math.sin(G.t * 9) * 3, a = Math.min(1, (c.t - G.t) * 2); ctx.save(); ctx.globalAlpha = a; ctx.lineJoin = 'round';
+        if (c.k === 0) { ctx.fillStyle = '#ffc23a'; ctx.strokeStyle = '#3a1a00'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x - 5, y - 18); ctx.lineTo(x + 5, y - 18); ctx.lineTo(x + 2, y - 4); ctx.lineTo(x - 2, y - 4); ctx.closePath(); ctx.stroke(); ctx.fill(); ctx.beginPath(); ctx.arc(x, y + 2, 3.2, 0, 7); ctx.stroke(); ctx.fill(); }
+        else { ctx.strokeStyle = '#b06bff'; ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.beginPath(); ctx.arc(x, y - 6, 9, -0.3, Math.PI + 0.6); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x - 14, y - 4); ctx.lineTo(x - 8, y + 4); ctx.lineTo(x - 2, y - 3); ctx.stroke(); }
+        ctx.restore(); } } catch (e) { } return r; }; drawUnit.__tac = 1; };
+  hook(); hookD(); addEventListener('load', () => { hook(); hookD(); });
 })();
 /* Rig v4.6 d'Éternel II : squelette hiérarchique FK + IK 2 os, UNE seule orientation pour tout le corps.
    Les poses (12 principes / ZZZ) de Shinobi 2 sont conservées : le nouveau rig lit les cibles de ninjaPose et le ressort stx/sty. */
@@ -13551,6 +13556,64 @@ for (const k of ['celeste', 'miroir', 'neant', 'solaire', 'lunaire', 'anneaux', 
   @media (max-width:820px){#sh77 main{grid-template-columns:1fr;grid-template-rows:auto 1fr}#sh77 aside{order:-1;max-height:48vh}}`;
   document.head.appendChild(css);
   if (window.SNG && SNG.release) try { SNG.release(11, 'Touches ZQSD et boutiques vivantes', ['ZQSD + flèches, techniques 1 2 3 4 (U I O P en secours)', 'W : stade maximal du mode, C : charge, X : dōjutsu', 'Boutiques : approche-toi du comptoir et appuie sur E, écran plein avec aperçu animé', 'Nouveaux comptoirs Outils ninja à Konoha et Kirigakure']); } catch (e) {}
+})();
+/* Shinobi 2 — MAJ 21 : Jūbi, Madara Edo, Kage réanimés, Sept Épéistes, Susanoo rééquilibré, constellations des nouveautés. */
+(function () {
+  if (window.S2M21) return; const X = (window.S2M21 = { ev: {} }); const V = S2.v14;
+  const pl = () => G.players && G.players[0];
+  const near = (u, a, b) => { const r = a + Math.random() * (b - a), t = Math.random() * TAU; return [u.x + Math.cos(t) * r, u.y + Math.sin(t) * r]; };
+  /* ---------- 1. Susanoo : réduction de dégâts revue par stade, les coups spectraux la traversent ---------- */
+  try { const OLD = [0, 0.25, 0.35, 0.45, 0.55], NEW = [0, 0.2, 0.3, 0.38, 0.48]; const bd = dealDamage;
+    dealDamage = function (src, tgt, b, o = {}) { try { const sl = SE36.susLv(tgt); if (sl) { const T = o && o.tech && TECH[o.tech]; const pierce = (o && o.spectral) || (T && T.p && T.p.spectral); arguments[2] = b * (pierce ? 1 / (1 - OLD[sl]) * (1 - NEW[sl] * 0.5) : (1 - NEW[sl]) / (1 - OLD[sl])); } } catch (e) { } return bd.apply(this, arguments); };
+    X.sus = NEW; } catch (e) { }
+  /* ---------- 2. Jūbi jouable (Mode Jinchūriki d’Obito) ---------- */
+  try { if (!BEASTS.some((b) => b.id === 'jubi')) { const el = EL.bois ? 'bois' : 'neutre';
+      BEASTS.push({ id: 'jubi', n: 'Jūbi', t: 'Bête à Dix Queues', tails: 10, el, body: 'quad', sp: 'boar', c: '#3a3046', c2: '#c06bff', host: 'Mode Jinchūriki d’Obito : Gudōdama et chakra des neuf bêtes réunies' });
+      let n = 0; for (const k of Object.keys(TECH)) { if (!/_hoo$/.test(k)) continue; const T0 = TECH[k]; if (!T0 || T0.beastId !== 'hoo') continue; const id = k.replace(/_hoo$/, '_jubi'); if (TECH[id]) continue;
+        const T = JSON.parse(JSON.stringify(T0)); T.id = id; T.beastId = 'jubi'; T.el = el; T.n = String(T.n || '').replace(/Kurama|Hōō|Phénix/g, 'Jūbi'); if (T.dmg) T.dmg = Math.round(T.dmg * 1.1); if (T.p) { T.p.beastId = 'jubi'; } TECH[id] = T; n++; }
+      X.jubiTechs = n; } } catch (e) { console.warn('m21 jubi', e); }
+  const grantJubi = () => { const p = P(); if (!p) return; p.beasts = p.beasts || []; if (!p.beasts.includes('jubi')) { p.beasts.push('jubi'); Profile.save(); try { toast('Bête scellée', 'Jūbi', 'Mode Jinchūriki d’Obito débloqué. Équipe-la dans Préparation.', '#c06bff', '十'); } catch (e) { } } };
+  X.grantJubi = grantJubi;
+  // Jinchūriki du Jūbi : silhouette pâle et orbes Gudōdama flottantes
+  try { const bdu = drawUnit; drawUnit = function (ctx, gl, u) { const r = bdu.apply(this, arguments); try { if (u && !u.dead && ((u.mode && u.mode.id === 'bete' && u.beast === 'jubi') || u._jubiFoe)) { const s = u.size || 1; for (let i = 0; i < 6; i++) { const a = G.t * 1.6 + i * TAU / 6; const x = u.x + Math.cos(a) * 34 * s, y = u.y - (u.z || 0) - 70 * s + Math.sin(a) * 10 * s; ctx.fillStyle = '#16121c'; ctx.beginPath(); ctx.arc(x, y, 5 * s, 0, TAU); ctx.fill(); ctx.strokeStyle = 'rgba(192,107,255,.7)'; ctx.lineWidth = 1.5; ctx.stroke(); } } } catch (e) { } return r; }; } catch (e) { }
+  /* ---------- 3. Madara Edo : kit de la Saga ---------- */
+  const MADARA = ['mad_meteore', 'mad_sus_meteore', 'mad_sus_lame', 'mad_arbres', 'feu_dragon', 'feu_boule'];
+  try { const kf = V.kitFor; V.kitFor = function (Rc) { if (Rc && Rc.id === 'madara') { const k = MADARA.filter((id) => TECH[id]).slice(0, 4); if (k.length >= 3) return k; } if (Rc && Rc.kit) { const k = Rc.kit.filter((id) => TECH[id]); if (k.length >= 2) return k.concat(kf.apply(this, arguments)).slice(0, 4); } return kf.apply(this, arguments); }; } catch (e) { }
+  // nouveaux réanimés : les Épéistes manquants
+  try { const R = (id, n, el, hair, outfit, scarf, extra) => Object.assign({ id, n, el, eye: '', look: { hair, outfit, scarf }, sword: 1, t: 'Épéiste de la Brume' }, extra || {});
+    const add = [R('mangetsu', 'Mangetsu Hōzuki', 'eau', '#e8f0ff', '#3a5a6a', '#3f9dff'), R('jinin', 'Jinin Akebino', 'terre', '#2a2a2a', '#4a4a5a', '#c8c8d0'), R('kushimaru', 'Kushimaru Kuriarare', 'eau', '#d8d8d8', '#3a4a5a', '#e8e8f0'), R('ameyuri', 'Ameyuri Ringo', 'foudre', '#c02a2a', '#3a3a4a', '#ffe23f'), R('jinpachi', 'Jinpachi Munashi', 'feu', '#1a1a1a', '#5a3a2a', '#ff7a2a'), R('fuguki', 'Fuguki Suikazan', 'eau', '#e8e8e8', '#3a5a5a', '#5a7a8a')];
+    for (const r of add) if (!V.ROSTER.some((x) => x.id === r.id)) V.ROSTER.push(r); } catch (e) { }
+  /* ---------- 4. Réanimés hostiles + rencontres ---------- */
+  function foeEdo(id, x, y, mul) { const Rc = V.ROSTER.find((r) => r.id === id); if (!Rc) return null; const p = P(); const lv = Math.max(20, (p && p.lv) || 20);
+    const clan = CLAN_ORDER.find((c) => CLANS[c].el === (Rc.el === 'neutre' ? 'terre' : Rc.el)) || CLAN_ORDER[0];
+    const b = botBuild(clan, lv, true); b.slots = V.kitFor(Rc); b.eye = null; b.name = Rc.n + ' (Edo)'; b.look = Object.assign({}, b.look, Rc.look, { skin: '#c9c2b6', band: Rc.look.scarf });
+    const u = makePlayerUnit(b, 1, 40 + (X.n = (X.n || 0) + 1), false); u.kind = 'mob'; u.isBot = false; u.ai = { type: 'shinobi', st: 'idle', t: 0 }; u.x = x; u.y = y; u.edo = true; u.edoId = id; u.sword = !!Rc.sword || u.sword;
+    u.maxHp *= (mul || 1.4); u.hp = u.maxHp; u.xpVal = 80; u.ryoVal = 60; u.name = Rc.n + ' (Edo)'; u._m21 = 1; addUnit(u);
+    try { for (let i = 0; i < 18; i++) FX.add({ type: 'glow', x: x + rand(-20, 20), y, z: rand(10, 80), vz: rand(20, 120), c: pick(['#bfb5a5', '#8a8070', '#e8e0d0']), size: rand(4, 9), life: rand(0.6, 1.2), drag: 0.08 }); } catch (e) { }
+    return u; }
+  X.foeEdo = foeEdo;
+  const say = (pages, done) => { if (SE35.say) SE35.say(pages, done); else if (done) done(); };
+  const spawnAround = (ids, mul) => { const u = pl(); const out = []; ids.forEach((id) => { const [x, y] = near(u, 380, 560); const v = foeEdo(id, x, y, mul); if (v) out.push(v); }); return out; };
+  const EVS = [
+    ['Kage réanimés', '影', '#d8d0c0', () => { const K = V.ROSTER.filter((r) => r.kage); const a = pick(K), b = pick(K.filter((r) => r !== a));
+      say([{ who: 'Kabuto Yakushi', k: '穢', c: '#a8e070', t: 'Les Kage d’autrefois… réanimés pour toi.' }, { who: a.n, k: '影', c: '#d8d0c0', t: 'Mon corps se bat tout seul. Arrête-nous.' }], () => { spawnAround([a.id, b.id], 1.8); banner('Kage réanimés', 'EDO TENSEI', '#d8d0c0'); }); }],
+    ['Les Sept Épéistes de la Brume', '刀', '#3f9dff', () => { const S = ['zabuza', 'kisame', 'mangetsu', 'jinin', 'kushimaru', 'ameyuri', 'jinpachi', 'fuguki'].filter((id) => V.ROSTER.some((r) => r.id === id)); const pick3 = []; while (pick3.length < 3 && S.length) pick3.push(S.splice(Math.floor(Math.random() * S.length), 1)[0]);
+      say([{ who: 'Zabuza Momochi', k: '刀', c: '#3f9dff', t: 'La brume se lève. Les Épéistes sont de retour.' }], () => { spawnAround(pick3, 1.4); banner('Sept Épéistes', 'EDO TENSEI', '#3f9dff'); }); }],
+    ['Madara Uchiha réanimé', '斑', '#a02020', () => { say([{ who: 'Madara Uchiha', k: '斑', c: '#a02020', t: 'Danse avec moi, si tu en es capable.' }], () => { const u = pl(); const [x, y] = near(u, 420, 520); const m = foeEdo('madara', x, y, 3.2); if (m) { m._madara = 1; m.atk = (m.atk || 1) * 1.2; } banner('Madara Uchiha', 'EDO TENSEI · SUSANOO PARFAIT', '#a02020'); }); }],
+    ['Obito, jinchūriki du Jūbi', '十', '#c06bff', () => { say([{ who: 'Obito Uchiha', k: '十', c: '#c06bff', t: 'Le Jūbi est en moi. Ce monde n’est plus qu’un rêve.' }, { who: 'Obito Uchiha', k: '十', c: '#c06bff', t: 'Si tu me bats… prends-le. Il ne m’a jamais appartenu.' }], () => { const u = pl(); const [x, y] = near(u, 420, 520); const o = foeEdo('obito', x, y, 3.6); if (o) { o.edo = false; o._jubiFoe = 1; o.name = 'Obito (Jinchūriki du Jūbi)'; o.look = Object.assign({}, o.look, { hair: '#f2f2f2', outfit: '#16121c', scarf: '#c06bff', skin: '#f2efe8' }); X.obito = o; } banner('Obito Uchiha', 'JINCHŪRIKI DU JŪBI', '#c06bff'); }); }],
+  ];
+  try { for (const [n, k, c, f] of EVS) if (!SE35.EVENTS.some((e) => e.n === n)) SE35.EVENTS.push({ id: SE35.EVENTS.length, n, k, c, f, rare: false, w: 1 }); } catch (e) { }
+  setInterval(() => { try { const o = X.obito; if (o && (o.dead || o.hp <= 0)) { X.obito = null; X.ev.obitoDown = 1; grantJubi(); } } catch (e) { } }, 300);
+  /* ---------- 5. Constellations pour les techniques ajoutées ---------- */
+  function cst() { try { const C = S2.cst; if (!C || !C.trees) return 0; const donors = Object.keys(C.trees); let n = 0; const sigs = new Set(Object.values(C.trees).map((t) => t.sig));
+      const h = (s) => { let x = 2166136261; for (let i = 0; i < s.length; i++) { x ^= s.charCodeAt(i); x = Math.imul(x, 16777619); } return x >>> 0; };
+      for (const id of Object.keys(TECH)) { if (C.trees[id]) continue; const T = TECH[id]; const base = id.replace(/_jubi$/, '_hoo'); const d = C.trees[base] || C.trees[donors[h(id) % donors.length]]; if (!d) continue;
+        let salt = 0, sh, sig; do { const rot = ((h(id + salt) % 628) / 100), mir = h(id + 'm' + salt) % 2 ? -1 : 1, sc = 0.88 + (h(id + 's' + salt) % 20) / 100; const c = Math.cos(rot), s = Math.sin(rot); const tf = (p) => [(p[0] * c - p[1] * s) * mir * sc, (p[0] * s + p[1] * c) * sc];
+          sh = Object.assign({}, d.sh, { pts: d.sh.pts.map(tf), deco: (d.sh.deco || []).map((l) => l.map(tf)) }); sig = sh.pts.map((p) => p[0].toFixed(2) + ',' + p[1].toFixed(2)).join(';'); salt++; } while (sigs.has(sig) && salt < 20);
+        sigs.add(sig); C.fam[id] = d.fam; C.trees[id] = { id, fam: d.fam, sh, sig, stars: d.stars.map((st, i) => ({ n: i ? st.n : (T.n || id), b: st.b })) }; n++; }
+      return n; } catch (e) { console.warn('m21 cst', e); return 0; } }
+  X.cst = cst(); setTimeout(() => { X.cst += cst(); }, 1500);
+  S2.note('m21', '#c06bff', 'MAJ 21 — Jūbi & Edo Tensei', 'Jūbi jouable (Mode Jinchūriki d’Obito) : bats Obito, jinchūriki du Jūbi, en monde ouvert pour le sceller. Madara Edo avec son kit de la Saga (Tengai Shinsei, Susanoo parfait, Jukai Kōtan). Rencontres : Kage réanimés et Sept Épéistes de la Brume (6 épéistes ajoutés au roster Edo Tensei). Susanoo : réduction de dégâts 20/30/38/48 % selon le stade, les coups spectraux la traversent à moitié. Constellations générées pour toutes les nouvelles techniques.');
 })();
 /* Shinobi 2 — Constellations uniques par technique (port Éternel II v4.5, formes thématiques) */
 (function(){
